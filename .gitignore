@@ -12,3 +12,5 @@ ingesta/datos_demo.json
 ingesta/*.log*
 ingesta/resultados.html
 ingesta/resultados_demo.json
+ingesta/cache_waqi.json
+ingesta/cache_waqi.tmp

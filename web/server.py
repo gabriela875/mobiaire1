@@ -112,6 +112,14 @@ class Handler(BaseHTTPRequestHandler):
         if camino == "/api/zonas":
             return self._zonas()
 
+        # --- WAQI (datos recientes; token solo en el backend) ------------
+        if camino == "/api/waqi/estaciones":
+            return self._waqi_estaciones()
+
+        if camino.startswith("/api/waqi/estacion/"):
+            uid = camino[len("/api/waqi/estacion/"):].strip("/")
+            return self._waqi_estacion(uid)
+
         return self._error("Ruta no encontrada", 404)
 
     # bloquear cualquier método que no sea GET (solo lectura)
@@ -161,6 +169,27 @@ class Handler(BaseHTTPRequestHandler):
             return self._error(err, 503)
         return self._json(datos)
 
+    # --- WAQI (proxy de solo lectura; el token NUNCA sale del backend) ----
+    def _waqi_estaciones(self):
+        from web import waqi
+        if not waqi.hay_token():
+            return self._error("WAQI no configurado: falta WAQI_TOKEN en .env del backend.", 503)
+        try:
+            return self._json(waqi.estaciones_bogota())
+        except waqi.ErrorWAQI as e:
+            return self._error(str(e), 502)
+
+    def _waqi_estacion(self, uid):
+        from web import waqi
+        if not waqi.hay_token():
+            return self._error("WAQI no configurado: falta WAQI_TOKEN en .env del backend.", 503)
+        if not uid.isdigit():
+            return self._error("uid de estación inválido (debe ser numérico).", 400)
+        try:
+            return self._json(waqi.estacion(uid))
+        except waqi.ErrorWAQI as e:
+            return self._error(str(e), 502)
+
     def _salud(self):
         return self._json({
             "ok": True,
@@ -173,8 +202,20 @@ class Handler(BaseHTTPRequestHandler):
                 "existe": ARCHIVO_DEMO.exists(),
                 "ruta": str(ARCHIVO_DEMO.relative_to(RAIZ)),
             },
+            "waqi": {
+                # Solo informa SI hay token configurado; nunca su valor.
+                "configurado": self._waqi_configurado(),
+            },
             "consultado_en": datetime.now(timezone.utc).astimezone().isoformat(timespec="seconds"),
         })
+
+    @staticmethod
+    def _waqi_configurado():
+        try:
+            from web import waqi
+            return waqi.hay_token()
+        except Exception:
+            return False
 
     # logs sobrios (sin datos personales)
     def log_message(self, formato, *args):
