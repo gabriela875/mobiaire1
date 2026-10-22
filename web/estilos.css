@@ -1,0 +1,271 @@
+/* MobiAire Materno — estilos. Diseño limpio, tarjetas y responsive (mobile-first).
+   Los estados nunca se comunican solo con color: siempre hay icono + texto. */
+
+:root {
+  --verde: #1b873f;
+  --verde-bg: #e7f6ec;
+  --naranja: #b45309;
+  --naranja-bg: #fdf0e0;
+  --rojo: #b01a1a;
+  --rojo-bg: #fbe8e8;
+  --gris: #5b6472;
+  --gris-bg: #eef1f5;
+
+  --tinta: #1c2430;
+  --tinta-suave: #51607a;
+  --fondo: #f4f6fa;
+  --tarjeta: #ffffff;
+  --borde: #e2e7ef;
+  --sombra: 0 1px 3px rgba(20, 30, 50, .08), 0 6px 18px rgba(20, 30, 50, .06);
+  --radio: 16px;
+  --azul: #2f5fe0;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  color: var(--tinta);
+  background: var(--fondo);
+  line-height: 1.5;
+}
+
+.salto-contenido {
+  position: absolute;
+  left: -999px;
+}
+.salto-contenido:focus {
+  left: 12px; top: 12px;
+  background: #fff; padding: 10px 14px; border-radius: 10px;
+  box-shadow: var(--sombra); z-index: 20;
+}
+
+/* ---------- Cabecera ---------- */
+.cabecera {
+  background: linear-gradient(135deg, #0f6f54, #1b873f);
+  color: #fff;
+  padding: 20px 16px 18px;
+}
+.cabecera__marca { display: flex; align-items: center; gap: 12px; max-width: 920px; margin: 0 auto; }
+.logo { font-size: 2rem; }
+.cabecera__titulo { margin: 0; font-size: 1.5rem; font-weight: 800; letter-spacing: -.02em; }
+.cabecera__titulo span { font-weight: 400; opacity: .9; }
+.cabecera__sub { margin: 2px 0 0; font-size: .85rem; opacity: .92; }
+
+.banda-demo {
+  max-width: 920px;
+  margin: 14px auto 0;
+  background: #fff4cc;
+  color: #6b4e00;
+  border: 2px dashed #b88900;
+  border-radius: 12px;
+  padding: 8px 14px;
+  display: flex; flex-direction: column;
+}
+.banda-demo strong { letter-spacing: .04em; }
+.banda-demo span { font-size: .82rem; }
+
+/* ---------- Tabs ---------- */
+.tabs {
+  display: flex;
+  gap: 4px;
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 10px 12px 0;
+}
+.tab {
+  flex: 1;
+  background: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  padding: 12px 8px;
+  font-size: .95rem;
+  font-weight: 600;
+  color: var(--gris);
+  cursor: pointer;
+  border-radius: 10px 10px 0 0;
+}
+.tab[aria-selected="true"] { color: var(--verde); border-bottom-color: var(--verde); background: #fff; }
+.tab:focus-visible { outline: 3px solid var(--azul); outline-offset: 2px; }
+
+/* ---------- Barra de modo ---------- */
+.barra-modo {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 10px 16px;
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  flex-wrap: wrap;
+}
+.interruptor { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: .9rem; }
+.interruptor small { color: var(--gris); }
+.btn-recargar {
+  background: #fff; border: 1px solid var(--borde); border-radius: 10px;
+  padding: 8px 14px; font-size: .9rem; cursor: pointer; color: var(--tinta);
+}
+.btn-recargar:hover { background: #f0f3f8; }
+.btn-recargar:focus-visible { outline: 3px solid var(--azul); outline-offset: 2px; }
+
+/* ---------- Contenedor ---------- */
+.contenedor { max-width: 920px; margin: 0 auto; padding: 8px 16px 40px; }
+.vista__titulo { font-size: 1.25rem; margin: 8px 0 4px; }
+.vista__ayuda { color: var(--gris); font-size: .9rem; margin: 0 0 16px; }
+
+/* ---------- Tarjeta principal del semáforo ---------- */
+.semaforo {
+  background: var(--tarjeta);
+  border-radius: var(--radio);
+  box-shadow: var(--sombra);
+  overflow: hidden;
+  border: 1px solid var(--borde);
+}
+.semaforo__cinta {
+  padding: 18px 20px;
+  color: #fff;
+  display: flex; align-items: center; gap: 16px;
+}
+.semaforo__cinta.nivel-verde { background: var(--verde); }
+.semaforo__cinta.nivel-naranja { background: var(--naranja); }
+.semaforo__cinta.nivel-rojo { background: var(--rojo); }
+.semaforo__cinta.nivel-gris { background: var(--gris); }
+
+.semaforo__icono { font-size: 2.6rem; line-height: 1; }
+.semaforo__ica { font-size: 3.2rem; font-weight: 800; line-height: 1; }
+.semaforo__ica small { font-size: .9rem; font-weight: 600; opacity: .9; display: block; }
+.semaforo__nivel { font-size: 1.15rem; font-weight: 700; margin: 0; }
+.semaforo__nivel-desc { font-size: .85rem; margin: 2px 0 0; opacity: .95; }
+
+.semaforo__cuerpo { padding: 18px 20px; }
+.semaforo__estacion { font-size: 1.1rem; font-weight: 700; margin: 0 0 2px; }
+.semaforo__ubicacion { color: var(--gris); font-size: .85rem; margin: 0 0 14px; }
+
+.medidas { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.medida {
+  background: #f8fafc; border: 1px solid var(--borde);
+  border-radius: 12px; padding: 12px 14px;
+}
+.medida__nombre { font-size: .8rem; color: var(--gris); margin: 0; }
+.medida__valor { font-size: 1.35rem; font-weight: 700; margin: 2px 0 0; }
+.medida__valor small { font-size: .75rem; font-weight: 500; color: var(--gris); }
+.medida__ica { font-size: .78rem; color: var(--gris); margin: 2px 0 0; }
+.medida--na .medida__valor { color: var(--gris); }
+
+/* Luces del semáforo (indicador visual con texto asociado) */
+.luces { display: flex; gap: 8px; margin: 16px 0 6px; align-items: center; }
+.luz {
+  width: 20px; height: 20px; border-radius: 50%;
+  background: #d4dae3; border: 2px solid #c2c9d4;
+}
+.luz.on.luz-verde { background: var(--verde); border-color: var(--verde); }
+.luz.on.luz-naranja { background: var(--naranja); border-color: var(--naranja); }
+.luz.on.luz-rojo { background: var(--rojo); border-color: var(--rojo); }
+.luces__texto { font-size: .85rem; color: var(--gris); margin-left: 4px; }
+
+/* ---------- Fechas y avisos ---------- */
+.datos-fecha {
+  margin: 16px 0 0; padding: 12px 14px;
+  background: #f8fafc; border: 1px solid var(--borde); border-radius: 12px;
+  font-size: .85rem;
+}
+.datos-fecha dt { color: var(--gris); font-weight: 600; }
+.datos-fecha dd { margin: 0 0 8px; }
+.datos-fecha dd:last-child { margin-bottom: 0; }
+
+.aviso {
+  display: flex; gap: 10px; align-items: flex-start;
+  border-radius: 12px; padding: 12px 14px; margin: 16px 0 0;
+  font-size: .88rem;
+}
+.aviso__icono { font-size: 1.2rem; line-height: 1.3; }
+.aviso--historico { background: var(--naranja-bg); border: 1px solid #f0c48a; color: #7a3e00; }
+.aviso--demo { background: #fff4cc; border: 1px dashed #b88900; color: #6b4e00; }
+.aviso--info { background: #e8f0ff; border: 1px solid #b8ccf5; color: #1e3a8a; }
+
+/* ---------- Estados (badge) ---------- */
+.badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: .75rem; font-weight: 700; padding: 3px 10px; border-radius: 999px;
+  border: 1px solid transparent;
+}
+.badge--verde { background: var(--verde-bg); color: var(--verde); border-color: #a9ddb9; }
+.badge--naranja { background: var(--naranja-bg); color: var(--naranja); border-color: #f0c48a; }
+.badge--rojo { background: var(--rojo-bg); color: var(--rojo); border-color: #eab0b0; }
+.badge--gris { background: var(--gris-bg); color: var(--gris); border-color: #cfd6e0; }
+.badge--demo { background: #fff4cc; color: #6b4e00; border: 1px dashed #b88900; }
+
+/* ---------- Estados de pantalla completa (cargando / error / vacío) ---------- */
+.estado {
+  background: var(--tarjeta); border: 1px solid var(--borde);
+  border-radius: var(--radio); box-shadow: var(--sombra);
+  padding: 32px 24px; text-align: center;
+}
+.estado__icono { font-size: 2.4rem; }
+.estado__titulo { font-size: 1.15rem; margin: 10px 0 4px; }
+.estado__texto { color: var(--gris); font-size: .9rem; margin: 0 auto; max-width: 420px; }
+.estado--error .estado__icono { color: var(--rojo); }
+
+.cargando-punto {
+  display: inline-block; width: 10px; height: 10px; margin: 0 3px;
+  background: var(--verde); border-radius: 50%;
+  animation: rebote 1s infinite ease-in-out;
+}
+.cargando-punto:nth-child(2) { animation-delay: .15s; }
+.cargando-punto:nth-child(3) { animation-delay: .3s; }
+@keyframes rebote { 0%, 80%, 100% { transform: scale(.6); opacity: .5; } 40% { transform: scale(1); opacity: 1; } }
+
+/* ---------- Rejilla de estaciones ---------- */
+.rejilla {
+  display: grid; gap: 14px;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+}
+.tarjeta-est {
+  text-align: left; width: 100%;
+  background: var(--tarjeta); border: 1px solid var(--borde);
+  border-left: 8px solid var(--gris);
+  border-radius: 14px; padding: 16px; cursor: pointer;
+  box-shadow: var(--sombra);
+}
+.tarjeta-est:hover { transform: translateY(-2px); transition: transform .12s; }
+.tarjeta-est:focus-visible { outline: 3px solid var(--azul); outline-offset: 2px; }
+.tarjeta-est.nivel-verde { border-left-color: var(--verde); }
+.tarjeta-est.nivel-naranja { border-left-color: var(--naranja); }
+.tarjeta-est.nivel-rojo { border-left-color: var(--rojo); }
+.tarjeta-est.nivel-gris { border-left-color: var(--gris); }
+.tarjeta-est__cabe { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+.tarjeta-est__nombre { font-size: 1.02rem; font-weight: 700; margin: 0; }
+.tarjeta-est__ica { font-size: 2rem; font-weight: 800; margin: 8px 0 0; }
+.tarjeta-est__ica small { font-size: .7rem; font-weight: 600; color: var(--gris); }
+.tarjeta-est__pm { font-size: .82rem; color: var(--gris); margin: 6px 0 0; }
+.tarjeta-est__fecha { font-size: .78rem; color: var(--gris); margin: 8px 0 0; }
+
+.volver {
+  background: none; border: none; color: var(--azul); cursor: pointer;
+  font-size: .9rem; padding: 6px 0; margin-bottom: 10px; font-weight: 600;
+}
+.volver:focus-visible { outline: 3px solid var(--azul); outline-offset: 2px; }
+
+/* ---------- Zonas (Sprint 2) ---------- */
+.selector-zona { margin: 8px 0 18px; }
+.selector-zona label { display: block; font-weight: 600; margin-bottom: 6px; }
+.selector-zona select {
+  width: 100%; padding: 12px 14px; font-size: 1rem;
+  border: 1px solid var(--borde); border-radius: 12px; background: #fff;
+}
+.selector-zona select:focus-visible { outline: 3px solid var(--azul); outline-offset: 2px; }
+
+.pendiente {
+  background: #eef1f5; border: 1px dashed #b7c0cf; color: #3b4453;
+  border-radius: 12px; padding: 14px 16px; font-size: .88rem; margin-top: 14px;
+}
+.pendiente strong { display: block; margin-bottom: 4px; }
+
+/* ---------- Responsive ---------- */
+@media (max-width: 420px) {
+  .semaforo__ica { font-size: 2.6rem; }
+  .medidas { grid-template-columns: 1fr; }
+  .cabecera__titulo { font-size: 1.3rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cargando-punto, .tarjeta-est:hover { animation: none; transform: none; }
+}

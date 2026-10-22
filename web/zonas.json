@@ -1,0 +1,17 @@
+{
+  "localidad": "Ciudad Bolívar",
+  "descripcion": "Unidades de Planeamiento Zonal (UPZ) de la localidad de Ciudad Bolívar, Bogotá. Son divisiones administrativas oficiales de la ciudad.",
+  "fuente_nombres": "Secretaría Distrital de Planeación de Bogotá (nombres y códigos de UPZ). Son nombres administrativos públicos, no coordenadas.",
+  "asociacion_estaciones": "pendiente",
+  "nota_pendiente": "La asociación entre cada zona y la estación de monitoreo más cercana está pendiente: requiere límites geográficos de las UPZ y una referencia verificable de distancias. No se afirma qué estación es la más cercana a ninguna zona. Por ahora, consulta las estaciones disponibles directamente en la pestaña «Estaciones».",
+  "zonas": [
+    { "id": "arborizadora", "codigo": "65", "nombre": "Arborizadora", "estacion_asociada": null },
+    { "id": "san_francisco", "codigo": "66", "nombre": "San Francisco", "estacion_asociada": null },
+    { "id": "lucero", "codigo": "67", "nombre": "Lucero", "estacion_asociada": null },
+    { "id": "el_tesoro", "codigo": "68", "nombre": "El Tesoro", "estacion_asociada": null },
+    { "id": "ismael_perdomo", "codigo": "69", "nombre": "Ismael Perdomo", "estacion_asociada": null },
+    { "id": "jerusalen", "codigo": "70", "nombre": "Jerusalén", "estacion_asociada": null },
+    { "id": "monte_blanco", "codigo": "63", "nombre": "Monte Blanco", "estacion_asociada": null },
+    { "id": "mochuelo", "codigo": "64", "nombre": "Mochuelo (rural)", "estacion_asociada": null }
+  ]
+}

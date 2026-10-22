@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="MobiAire Materno: información sobre la calidad del aire para mujeres gestantes de Ciudad Bolívar, Bogotá.">
+  <title>MobiAire Materno — Calidad del aire</title>
+  <link rel="stylesheet" href="estilos.css">
+</head>
+<body>
+  <a class="salto-contenido" href="#contenido">Saltar al contenido</a>
+
+  <header class="cabecera">
+    <div class="cabecera__marca">
+      <span class="logo" aria-hidden="true">🌿</span>
+      <div>
+        <h1 class="cabecera__titulo">MobiAire <span>Materno</span></h1>
+        <p class="cabecera__sub">Calidad del aire para gestantes · Ciudad Bolívar, Bogotá</p>
+      </div>
+    </div>
+    <!-- Bandera de modo demo: visible de forma permanente cuando está activa -->
+    <div id="banda-demo" class="banda-demo" hidden role="status">
+      <strong>DEMO — DATOS SIMULADOS</strong>
+      <span>Valores sintéticos para probar la interfaz. No son mediciones reales.</span>
+    </div>
+  </header>
+
+  <nav class="tabs" aria-label="Secciones">
+    <button class="tab" id="tab-estacion" aria-selected="true" data-vista="estacion">Semáforo</button>
+    <button class="tab" id="tab-estaciones" aria-selected="false" data-vista="estaciones">Estaciones</button>
+    <button class="tab" id="tab-zonas" aria-selected="false" data-vista="zonas">Zonas</button>
+  </nav>
+
+  <!-- Interruptor de modo demo -->
+  <div class="barra-modo">
+    <label class="interruptor">
+      <input type="checkbox" id="chk-demo">
+      <span class="interruptor__texto">Modo demostración <small>(datos simulados)</small></span>
+    </label>
+    <button class="btn-recargar" id="btn-recargar" title="Volver a leer los resultados del disco">
+      ↻ Actualizar
+    </button>
+  </div>
+
+  <main id="contenido" class="contenedor">
+
+    <!-- ===================== VISTA: SEMÁFORO (principal) ===================== -->
+    <section id="vista-estacion" class="vista" aria-live="polite">
+      <!-- Los estados (cargando, error, etc.) y la tarjeta principal se inyectan aquí -->
+      <div id="semaforo-destino"></div>
+    </section>
+
+    <!-- ===================== VISTA: ESTACIONES ===================== -->
+    <section id="vista-estaciones" class="vista" hidden>
+      <h2 class="vista__titulo">Estaciones de monitoreo</h2>
+      <p class="vista__ayuda">Toca una estación para ver su detalle. El ICA mostrado corresponde a la fecha de medición indicada, no a la hora actual.</p>
+      <div id="lista-estaciones" class="rejilla"></div>
+    </section>
+
+    <!-- ===================== VISTA: ZONAS (Sprint 2) ===================== -->
+    <section id="vista-zonas" class="vista" hidden>
+      <h2 class="vista__titulo">Zonas de Ciudad Bolívar</h2>
+      <div id="zonas-destino"></div>
+    </section>
+
+  </main>
+
+  <footer class="pie">
+    <p class="pie__aviso">
+      <span aria-hidden="true">ℹ️</span>
+      Esta aplicación es <strong>informativa</strong> y <strong>no constituye un diagnóstico médico</strong>.
+      Ante síntomas o dudas de salud, consulta a tu profesional de salud.
+    </p>
+    <p class="pie__meta">
+      Fuente de datos: IDEAM / SISAIRE (datos.gov.co, <code>g4t8-zkc3</code>).
+      MobiAire Materno — Universidad Distrital Francisco José de Caldas.
+    </p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
