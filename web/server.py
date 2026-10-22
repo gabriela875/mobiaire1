@@ -44,6 +44,10 @@ ESTATICOS = {
     "/index.html": ("index.html", "text/html; charset=utf-8"),
     "/estilos.css": ("estilos.css", "text/css; charset=utf-8"),
     "/app.js": ("app.js", "application/javascript; charset=utf-8"),
+    # Prototipo visual estático (DEMO). Autocontenido; solo para revisión de diseño.
+    "/prototipo": ("prototipo/index.html", "text/html; charset=utf-8"),
+    "/prototipo/": ("prototipo/index.html", "text/html; charset=utf-8"),
+    "/prototipo/index.html": ("prototipo/index.html", "text/html; charset=utf-8"),
 }
 
 
