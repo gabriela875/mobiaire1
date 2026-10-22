@@ -25,6 +25,7 @@ No guarda ninguna información de quien consulta.
 """
 import argparse
 import json
+import re
 import sys
 from datetime import datetime, timezone
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -116,6 +117,9 @@ class Handler(BaseHTTPRequestHandler):
         if camino == "/api/waqi/estaciones":
             return self._waqi_estaciones()
 
+        if camino == "/api/waqi/ciudad-bolivar":
+            return self._waqi_ciudad_bolivar()
+
         if camino.startswith("/api/waqi/estacion/"):
             uid = camino[len("/api/waqi/estacion/"):].strip("/")
             return self._waqi_estacion(uid)
@@ -183,10 +187,20 @@ class Handler(BaseHTTPRequestHandler):
         from web import waqi
         if not waqi.hay_token():
             return self._error("WAQI no configurado: falta WAQI_TOKEN en .env del backend.", 503)
-        if not uid.isdigit():
-            return self._error("uid de estación inválido (debe ser numérico).", 400)
+        # WAQI acepta IDs internos (6235), con arroba (@6235) o externos (A522148).
+        if not re.fullmatch(r"@?\d+|A\d+", uid):
+            return self._error("uid de estación inválido (use número, @número o A+número).", 400)
         try:
             return self._json(waqi.estacion(uid))
+        except waqi.ErrorWAQI as e:
+            return self._error(str(e), 502)
+
+    def _waqi_ciudad_bolivar(self):
+        from web import waqi
+        if not waqi.hay_token():
+            return self._error("WAQI no configurado: falta WAQI_TOKEN en .env del backend.", 503)
+        try:
+            return self._json(waqi.ciudad_bolivar())
         except waqi.ErrorWAQI as e:
             return self._error(str(e), 502)
 

@@ -30,9 +30,17 @@ from ingesta import config  # noqa: E402  (ejecuta _cargar_env() al importar)
 BASE = "https://api.waqi.info"
 CACHE = RAIZ / "ingesta" / "cache_waqi.json"   # junto a los demás datos; ignorado por git
 CACHE_SEGUNDOS = int(os.getenv("WAQI_CACHE_S", "600"))   # 10 min por defecto
-# Recuadro aproximado de Bogotá (lat_sur, lon_oeste, lat_norte, lon_este)
+# Recuadro de Bogotá incluyendo el SUR (Ciudad Bolívar ~4.57, Mochuelo ~4.53).
+# (lat_sur, lon_oeste, lat_norte, lon_este)
 BBOX_BOGOTA = os.getenv("WAQI_BBOX", "4.45,-74.25,4.84,-73.99")
 TIMEOUT = 20
+
+# Estaciones de interés en el sur de Bogotá, confirmadas por consulta directa a WAQI.
+# A522148 = "Colegio CEDID Ciudad Bolívar" (ID externo de WAQI, prefijo 'A').
+# Mochuelo NO se añade porque no está verificado que exista en WAQI (ver barrido).
+ESTACIONES_SUR = {
+    "ciudad_bolivar": "A522148",
+}
 
 
 class ErrorWAQI(Exception):
@@ -111,29 +119,39 @@ def _num(x):
 
 
 def _estacion_de_feed(d):
-    """Convierte la respuesta /feed/@uid en un dict normalizado del proyecto."""
+    """Convierte la respuesta /feed/ en un dict normalizado del proyecto.
+
+    IMPORTANTE sobre unidades: los valores de `iaqi` que devuelve WAQI NO están
+    en µg/m³: son SUB-ÍNDICES AQI (escala US-EPA, sin unidad), ya convertidos por
+    WAQI. Por eso se nombran aqi_pm25 / aqi_pm10 y nunca se rotulan como µg/m³.
+    Las concentraciones reales en µg/m³ viven en el histórico del motor (otra vía).
+    """
     ciudad = d.get("city", {}) or {}
     iaqi = d.get("iaqi", {}) or {}
     geo = ciudad.get("geo") or [None, None]
     attrs = [a.get("name", "") for a in (d.get("attributions") or [])]
+    iso = (d.get("time", {}) or {}).get("iso")
     return {
         "uid": d.get("idx"),
         "nombre": ciudad.get("name"),
         "lat": _num(geo[0]) if len(geo) > 0 else None,
         "lon": _num(geo[1]) if len(geo) > 1 else None,
-        # AQI de WAQI (escala US-EPA). NO es el ICA del proyecto.
+        # AQI de WAQI (escala US-EPA, 0-500, SIN unidad). NO es el ICA del proyecto.
         "aqi_waqi": d.get("aqi"),
         "dominante": d.get("dominentpol"),
-        "pm25": _num((iaqi.get("pm25") or {}).get("v")),
-        "pm10": _num((iaqi.get("pm10") or {}).get("v")),
-        "o3": _num((iaqi.get("o3") or {}).get("v")),
-        "no2": _num((iaqi.get("no2") or {}).get("v")),
-        "so2": _num((iaqi.get("so2") or {}).get("v")),
-        "co": _num((iaqi.get("co") or {}).get("v")),
+        # Sub-índices AQI por contaminante (NO son concentraciones en µg/m³).
+        "aqi_pm25": _num((iaqi.get("pm25") or {}).get("v")),
+        "aqi_pm10": _num((iaqi.get("pm10") or {}).get("v")),
+        "aqi_o3": _num((iaqi.get("o3") or {}).get("v")),
+        "aqi_no2": _num((iaqi.get("no2") or {}).get("v")),
+        "aqi_so2": _num((iaqi.get("so2") or {}).get("v")),
+        "aqi_co": _num((iaqi.get("co") or {}).get("v")),
+        "unidad_valores": "sub-índice AQI (US-EPA), NO µg/m³",
         "contaminantes": sorted(iaqi.keys()),
         # Hora de medición en zona local de la estación (viene en -05:00 en el feed)
         "medido_en": (d.get("time", {}) or {}).get("s"),
-        "medido_iso": (d.get("time", {}) or {}).get("iso"),
+        "medido_iso": iso,
+        "reciente": _reciente(iso),
         "fuente": "WAQI",
         "atribucion": attrs,
         "escala_indice": "US-EPA (WAQI) — no es el ICA del proyecto",
@@ -202,8 +220,26 @@ def estaciones_bogota(forzar=False):
     return resultado
 
 
+def _ruta_feed(uid):
+    """Construye la ruta /feed/ correcta según el tipo de ID de WAQI.
+
+    WAQI tiene dos tipos de identificador:
+      - Internos: número puro (ej. 6235) -> se consulta como /feed/@6235/
+      - Externos: con prefijo 'A' (ej. A522148) -> se consulta como /feed/A522148/
+    Acepta también '@6235' (ya con arroba).
+    """
+    uid = str(uid).strip()
+    if uid.startswith("@") and uid[1:].isdigit():
+        return f"/feed/{uid}/"            # ya viene con arroba y es numérico
+    if uid[:1].upper() == "A" and uid[1:].isdigit():
+        return f"/feed/{uid}/"            # ID externo: sin @
+    if uid.isdigit():
+        return f"/feed/@{uid}/"           # ID interno: con @
+    raise ErrorWAQI(f"Identificador de estación no válido: {uid!r}")
+
+
 def estacion(uid, forzar=False):
-    """Detalle de una estación por uid (ej. 6235). Usa /feed/@uid. Cacheado."""
+    """Detalle de una estación por uid. Acepta IDs internos (6235) y externos (A522148)."""
     clave = f"feed_{uid}"
     if not forzar:
         c = _leer_cache(clave)
@@ -211,10 +247,11 @@ def estacion(uid, forzar=False):
             c = dict(c)
             c["desde_cache"] = True
             return c
-    data = _pedir(f"/feed/@{uid}/", {})
+    data = _pedir(_ruta_feed(uid), {})
     est = _estacion_de_feed(data)
     resultado = {
         "fuente": "WAQI / AQICN",
+        "atribucion": est.get("atribucion", []),
         "escala_indice": "US-EPA (WAQI) — no es el ICA del proyecto MobiAire",
         "consultado_en": datetime.now(timezone.utc).astimezone().isoformat(timespec="seconds"),
         "estacion": est,
@@ -222,3 +259,8 @@ def estacion(uid, forzar=False):
     _guardar_cache(clave, resultado)
     resultado["desde_cache"] = False
     return resultado
+
+
+def ciudad_bolivar(forzar=False):
+    """Estación de Ciudad Bolívar en WAQI (A522148 = Colegio CEDID Ciudad Bolívar)."""
+    return estacion(ESTACIONES_SUR["ciudad_bolivar"], forzar=forzar)

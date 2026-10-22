@@ -90,6 +90,20 @@ h1,h2,h3{font-family:var(--titulo);font-weight:800;letter-spacing:-.01em;color:v
 .aire__meta{font-family:var(--cuerpo);margin-top:18px;font-size:.8rem;color:var(--tinta-suave);display:flex;gap:22px;flex-wrap:wrap;}
 .aire__meta b{color:var(--tinta);font-weight:600;}
 
+/* Panel del dato RECIENTE de WAQI para Ciudad Bolívar (vía A, escala distinta) */
+.cbwaqi{margin-top:24px;padding-top:22px;border-top:1px dashed var(--linea-fuerte);}
+.cbwaqi__cabe{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;}
+.cbwaqi__tag{font-family:var(--cuerpo);font-weight:800;font-size:.74rem;letter-spacing:.06em;text-transform:uppercase;color:var(--coral-hondo);border-bottom:2px solid var(--coral);padding-bottom:3px;}
+.cbwaqi__escala{font-family:var(--cuerpo);font-size:.78rem;color:var(--tinta-suave);}
+.cbwaqi__cuerpo{display:flex;gap:30px;flex-wrap:wrap;align-items:center;margin-top:14px;}
+.cbwaqi__aqi{font-family:var(--dato);font-size:2.4rem;font-weight:700;line-height:1;color:var(--verde-hondo);}
+.cbwaqi__aqi small{font-family:var(--cuerpo);display:block;font-size:.66rem;letter-spacing:.06em;color:var(--tinta-suave);text-transform:uppercase;}
+.cbwaqi__sub{font-family:var(--cuerpo);font-size:.86rem;color:var(--tinta);}
+.cbwaqi__sub b{font-family:var(--dato);}
+.cbwaqi__meta{font-family:var(--cuerpo);font-size:.78rem;color:var(--tinta-suave);}
+.cbwaqi__meta b{color:var(--tinta);font-weight:600;}
+.cbwaqi--aviso{font-family:var(--cuerpo);font-size:.85rem;color:#8a5a00;background:#fbeed9;border:1px solid #ecc488;padding:10px 14px;}
+
 /* ---------- Pasos 01–04 (números marca de agua, sin cajas) ---------- */
 .pasos{display:grid;grid-template-columns:repeat(4,1fr);gap:28px;margin:66px 0 20px;}
 .paso__num{font-family:var(--titulo);font-size:4rem;font-weight:800;color:#eef1ef;line-height:.8;}
@@ -211,6 +225,15 @@ h1,h2,h3{font-family:var(--titulo);font-weight:800;letter-spacing:-.01em;color:v
         <span>Consulta: <b>ahora</b></span>
       </div>
     </div>
+  </div>
+
+  <!-- Vía A: dato RECIENTE de WAQI para Ciudad Bolívar (A522148). Escala distinta. -->
+  <div id="cb-waqi" class="cbwaqi" hidden>
+    <div class="cbwaqi__cabe">
+      <span class="cbwaqi__tag">◐ Dato reciente · WAQI</span>
+      <span class="cbwaqi__escala">Índice de la fuente (escala US-EPA) — <b>no es el ICA del proyecto</b></span>
+    </div>
+    <div class="cbwaqi__cuerpo" id="cb-waqi-cuerpo"><!-- se rellena por JS --></div>
   </div>
 </section>
 
@@ -416,6 +439,38 @@ function cargarHistoricoCB(){
   }).catch(function(){ /* deja el ejemplo DEMO que ya está en el HTML */ });
 }
 
+/* ----- Vía A: dato RECIENTE de WAQI para Ciudad Bolívar (A522148) ----- */
+function cargarWaqiCB(){
+  var panel=document.getElementById("cb-waqi"), cuerpo=document.getElementById("cb-waqi-cuerpo");
+  fetch("/api/waqi/ciudad-bolivar").then(function(r){ if(!r.ok) throw r.status; return r.json(); })
+  .then(function(d){
+    var e=d.estacion||{};
+    panel.hidden=false;
+    // Si el dato NO es reciente, mostrar estado en vez de un valor viejo
+    if(e.reciente===false){
+      cuerpo.className="cbwaqi__cuerpo";
+      cuerpo.innerHTML='<div class="cbwaqi--aviso">⚠️ La estación WAQI de Ciudad Bolívar ('+esc(e.nombre||"A522148")+
+        ') no reporta un dato reciente (última medición: '+esc(e.medido_en||"desconocida")+'). No se muestra un valor para no presentarlo como actual.</div>';
+      return;
+    }
+    cuerpo.className="cbwaqi__cuerpo";
+    cuerpo.innerHTML=
+      '<div class="cbwaqi__aqi">'+esc(e.aqi_waqi==null?"—":e.aqi_waqi)+'<small>AQI WAQI (0–500)</small></div>'+
+      '<div class="cbwaqi__sub">Estación: <b>'+esc(e.nombre||"Ciudad Bolívar")+'</b><br>'+
+        'Dominante: '+esc(e.dominante||"—")+' · sub-índice PM2.5 <b>'+esc(e.aqi_pm25==null?"N/D":e.aqi_pm25)+'</b>'+
+        ' · PM10 <b>'+esc(e.aqi_pm10==null?"N/D":e.aqi_pm10)+'</b><br>'+
+        '<span style="color:#c06a4e">Valores en sub-índice AQI, NO en µg/m³.</span></div>'+
+      '<div class="cbwaqi__meta">Medido: <b>'+esc(e.medido_en||"—")+'</b><br>'+
+        'Consulta: <b>'+esc(d.consultado_en||"—")+'</b><br>'+
+        'Fuente: WAQI · '+esc((d.atribucion||[]).join(" · "))+'</div>';
+  }).catch(function(st){
+    // Sin token (503) o fallo (502): panel con estado, no datos inventados
+    panel.hidden=false; cuerpo.className="cbwaqi__cuerpo";
+    cuerpo.innerHTML='<div class="cbwaqi--aviso">El dato reciente de WAQI para Ciudad Bolívar no está disponible ahora'+
+      (st===503?' (falta WAQI_TOKEN en el backend)':'')+'. Se muestra abajo el histórico del motor del proyecto.</div>';
+  });
+}
+
 /* ----- Ubicación OPCIONAL (solo al pulsar; no se guarda) ----- */
 function pedirUbicacion(){
   var aviso=document.getElementById("ubic-aviso");
@@ -438,6 +493,7 @@ document.getElementById("btn-ubic").onclick=pedirUbicacion;
 document.getElementById("btn-ubic2").onclick=pedirUbicacion;
 cargarEstaciones();
 cargarHistoricoCB();
+cargarWaqiCB();
 </script>
 </body>
 </html>

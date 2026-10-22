@@ -133,10 +133,77 @@ def main():
     except Exception as e:
         print("  ERROR en map/bounds:", _enmascarar(str(e)))
 
+    # 5) Ciudad Bolívar por ID directo (A522148) + consistencia ----------
+    seccion("5) Ciudad Bolívar directo: /feed/A522148/  (dos consultas)")
+    import time as _t
+    uid_cb = "A522148"
+    for intento in (1, 2):
+        try:
+            d2 = pedir(f"/feed/{uid_cb}/", {})
+            if d2.get("status") == "ok":
+                dd = d2["data"]
+                iaqi = dd.get("iaqi", {})
+                print(f"  Consulta #{intento}: status ok")
+                print("    Estación:", dd.get("city", {}).get("name"))
+                print("    AQI (WAQI):", dd.get("aqi"), "· dominante:", dd.get("dominentpol"))
+                print("    sub-índice pm25:", iaqi.get("pm25", {}).get("v", "N/D"),
+                      "· sub-índice pm10:", iaqi.get("pm10", {}).get("v", "N/D"),
+                      "  (ESTO NO ES µg/m³, es sub-índice AQI)")
+                print("    medido (time.s):", dd.get("time", {}).get("s"),
+                      "· iso:", dd.get("time", {}).get("iso"))
+                print("    coords:", dd.get("city", {}).get("geo"))
+                print("    atribución:", "; ".join(a.get("name", "") for a in dd.get("attributions", [])))
+            else:
+                print(f"  Consulta #{intento}: WAQI respondió error:",
+                      _enmascarar(json.dumps(d2.get("data"), ensure_ascii=False)))
+        except Exception as e:
+            print(f"  Consulta #{intento} ERROR:", _enmascarar(str(e)))
+        if intento == 1:
+            _t.sleep(2)   # breve pausa para comprobar que sigue devolviendo dato reciente
+
+    # 6) ¿Las unidades son AQI o µg/m³? Muestra la estructura cruda de iaqi
+    seccion("6) Comprobación de UNIDADES (no suponer)")
+    print("  WAQI documenta que los valores de iaqi ya están convertidos a AQI (US-EPA),")
+    print("  NO en µg/m³. Si en el punto 5 el 'sub-índice pm25' coincide con el AQI total")
+    print("  cuando el dominante es pm25, se confirma que es AQI y no concentración.")
+
+    # 7) Mochuelo y sur: ¿existe en WAQI? --------------------------------
+    seccion("7) Barrido del SUR: Mochuelo y cercanas")
+    for kw in ("mochuelo", "bolivar", "tunjuelito", "usme", "bosa"):
+        try:
+            s = pedir("/search/", {"keyword": kw})
+            filas = [f for f in (s.get("data", []) if s.get("status") == "ok" else [])
+                     if "colombia" in str(f.get("station", {}).get("name", "")).lower()
+                     or "bogot" in str(f.get("station", {}).get("name", "")).lower()]
+            if filas:
+                print(f"  '{kw}':")
+                for f in filas[:8]:
+                    st = f.get("station", {})
+                    print(f"     - {st.get('name')} · AQI {f.get('aqi')} · {st.get('geo')} · {st.get('time', {}).get('stime', '')}")
+            else:
+                print(f"  '{kw}': sin resultados en Bogotá/Colombia.")
+        except Exception as e:
+            print(f"  '{kw}' ERROR:", _enmascarar(str(e)))
+    # Barrido por coordenadas del extremo sur (Ciudad Bolívar / Mochuelo)
+    print("\n  Recuadro SUR (4.45,-74.22,4.62,-74.10):")
+    try:
+        m = pedir("/map/bounds/", {"latlng": "4.45,-74.22,4.62,-74.10"})
+        filas = m.get("data", []) if m.get("status") == "ok" else []
+        if filas:
+            for f in filas:
+                st = f.get("station", {})
+                print(f"     - uid {f.get('uid')} · {st.get('name')} · AQI {f.get('aqi')} · ({f.get('lat')},{f.get('lon')})")
+        else:
+            print("     sin estaciones en ese recuadro.")
+    except Exception as e:
+        print("     ERROR:", _enmascarar(str(e)))
+
     seccion("RESUMEN")
-    print("Si viste 'status: ok' en el punto 1, el token FUNCIONA.")
-    print("Revisa en los puntos 2–4 qué estaciones de Bogotá/Ciudad Bolívar aparecen,")
-    print("sus coordenadas, su AQI (escala WAQI, NO el ICA del proyecto) y la fecha de medición.")
+    print("Puntos 1-4: cobertura general de Bogotá.")
+    print("Punto 5: Ciudad Bolívar (A522148) por ID directo, dos veces (consistencia).")
+    print("Punto 6: las 'pm25/pm10' de WAQI son SUB-ÍNDICES AQI, NO µg/m³.")
+    print("Punto 7: si Mochuelo NO aparece, se deja constancia; no se inventa.")
+    print("Copia esta salida (es segura, no incluye el token) para decidir el siguiente paso.")
 
 
 if __name__ == "__main__":
