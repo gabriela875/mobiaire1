@@ -3,6 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#2f6b4f">
   <meta name="description" content="MobiAire Materno: información sobre la calidad del aire para mujeres gestantes de Ciudad Bolívar, Bogotá.">
   <title>MobiAire Materno — Calidad del aire</title>
   <link rel="stylesheet" href="estilos.css">
@@ -10,71 +11,115 @@
 <body>
   <a class="salto-contenido" href="#contenido">Saltar al contenido</a>
 
-  <header class="cabecera">
-    <div class="cabecera__marca">
-      <span class="logo" aria-hidden="true">🌿</span>
-      <div>
-        <h1 class="cabecera__titulo">MobiAire <span>Materno</span></h1>
-        <p class="cabecera__sub">Calidad del aire para gestantes · Ciudad Bolívar, Bogotá</p>
+  <!-- ===================== ENCABEZADO / IDENTIDAD ===================== -->
+  <header class="encabezado">
+    <div class="envoltura encabezado__fila">
+      <div class="marca">
+        <!-- Logotipo propio (SVG inline): gestante + hoja, sin imágenes externas -->
+        <svg class="marca__logo" viewBox="0 0 64 64" role="img" aria-label="MobiAire Materno" width="52" height="52">
+          <defs>
+            <clipPath id="circ"><circle cx="32" cy="32" r="30"/></clipPath>
+          </defs>
+          <circle cx="32" cy="32" r="30" fill="#e7f1ea"/>
+          <g clip-path="url(#circ)">
+            <!-- hojas de fondo -->
+            <path d="M6 54 Q14 34 30 40 Q18 48 12 60 Z" fill="#bcdcc8"/>
+            <path d="M58 20 Q44 18 40 32 Q52 26 60 30 Z" fill="#a8d0b7"/>
+            <path d="M54 52 Q48 40 36 46 Q46 48 50 60 Z" fill="#cfe6d7"/>
+            <!-- silueta de gestante -->
+            <path d="M40 16 a6 6 0 1 1 -0.1 0.2 Z" fill="#2f6b4f"/>
+            <path d="M38 22 q8 2 9 14 q1 12 -3 24 l-18 0 q-2 -10 1 -16 q-9 -2 -9 -12 q0 -8 8 -11 q6 -2 11 1 Z" fill="#3d8362"/>
+            <!-- vientre -->
+            <circle cx="24" cy="44" r="9" fill="#e8927c"/>
+          </g>
+          <circle cx="32" cy="32" r="30" fill="none" stroke="#2f6b4f" stroke-width="1.5" opacity=".35"/>
+        </svg>
+        <div class="marca__texto">
+          <p class="marca__nombre">MobiAire <span>Materno</span></p>
+          <p class="marca__lugar">
+            <svg class="icono-pin" viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path fill="currentColor" d="M8 0C5 0 2.6 2.4 2.6 5.4 2.6 9.3 8 16 8 16s5.4-6.7 5.4-10.6C13.4 2.4 11 0 8 0zm0 7.4a2 2 0 1 1 0-4 2 2 0 0 1 0 4z"/></svg>
+            Ciudad Bolívar · Bogotá, D.C.
+          </p>
+        </div>
+      </div>
+
+      <div class="modo">
+        <label class="interruptor" title="Mostrar datos simulados para ver los tres niveles del semáforo">
+          <input type="checkbox" id="chk-demo">
+          <span class="interruptor__pista" aria-hidden="true"></span>
+          <span class="interruptor__etq">Modo demostración</span>
+        </label>
       </div>
     </div>
+
     <!-- Bandera de modo demo: visible de forma permanente cuando está activa -->
     <div id="banda-demo" class="banda-demo" hidden role="status">
-      <strong>DEMO — DATOS SIMULADOS</strong>
-      <span>Valores sintéticos para probar la interfaz. No son mediciones reales.</span>
+      <span class="banda-demo__sello">DEMO</span>
+      <span class="banda-demo__txt"><strong>DATOS SIMULADOS.</strong> Valores de ejemplo para probar la interfaz; no son mediciones reales.</span>
     </div>
   </header>
 
-  <nav class="tabs" aria-label="Secciones">
-    <button class="tab" id="tab-estacion" aria-selected="true" data-vista="estacion">Semáforo</button>
-    <button class="tab" id="tab-estaciones" aria-selected="false" data-vista="estaciones">Estaciones</button>
-    <button class="tab" id="tab-zonas" aria-selected="false" data-vista="zonas">Zonas</button>
+  <!-- ===================== NAVEGACIÓN ===================== -->
+  <nav class="nav" aria-label="Secciones">
+    <div class="envoltura nav__fila">
+      <div class="nav__segmento" role="tablist">
+        <button class="nav__btn" id="tab-estacion" role="tab" aria-selected="true" data-vista="estacion">
+          <svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true"><circle cx="10" cy="10" r="7" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="10" cy="10" r="2.5" fill="currentColor"/></svg>
+          Semáforo
+        </button>
+        <button class="nav__btn" id="tab-estaciones" role="tab" aria-selected="false" data-vista="estaciones">
+          <svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true"><path d="M3 5h14M3 10h14M3 15h9" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+          Estaciones
+        </button>
+        <button class="nav__btn" id="tab-zonas" role="tab" aria-selected="false" data-vista="zonas">
+          <svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true"><path d="M10 2C6.7 2 4 4.7 4 8c0 4.5 6 10 6 10s6-5.5 6-10c0-3.3-2.7-6-6-6z" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+          Zonas
+        </button>
+      </div>
+      <button class="nav__recargar" id="btn-recargar" title="Volver a leer los resultados guardados">
+        <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true"><path d="M13.6 8a5.6 5.6 0 1 1-1.6-3.9m.5-2.1v2.6h-2.6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span>Actualizar</span>
+      </button>
+    </div>
   </nav>
 
-  <!-- Interruptor de modo demo -->
-  <div class="barra-modo">
-    <label class="interruptor">
-      <input type="checkbox" id="chk-demo">
-      <span class="interruptor__texto">Modo demostración <small>(datos simulados)</small></span>
-    </label>
-    <button class="btn-recargar" id="btn-recargar" title="Volver a leer los resultados del disco">
-      ↻ Actualizar
-    </button>
-  </div>
+  <!-- ===================== CONTENIDO ===================== -->
+  <main id="contenido" class="envoltura contenido">
 
-  <main id="contenido" class="contenedor">
-
-    <!-- ===================== VISTA: SEMÁFORO (principal) ===================== -->
     <section id="vista-estacion" class="vista" aria-live="polite">
-      <!-- Los estados (cargando, error, etc.) y la tarjeta principal se inyectan aquí -->
       <div id="semaforo-destino"></div>
     </section>
 
-    <!-- ===================== VISTA: ESTACIONES ===================== -->
     <section id="vista-estaciones" class="vista" hidden>
-      <h2 class="vista__titulo">Estaciones de monitoreo</h2>
-      <p class="vista__ayuda">Toca una estación para ver su detalle. El ICA mostrado corresponde a la fecha de medición indicada, no a la hora actual.</p>
-      <div id="lista-estaciones" class="rejilla"></div>
+      <header class="seccion-cabe">
+        <h2 class="seccion-titulo">Estaciones de monitoreo</h2>
+        <p class="seccion-intro">Datos de las estaciones disponibles en el proyecto. El ICA corresponde a la fecha de medición indicada en cada estación, no a la hora actual.</p>
+      </header>
+      <div id="lista-estaciones" class="estaciones"></div>
     </section>
 
-    <!-- ===================== VISTA: ZONAS (Sprint 2) ===================== -->
     <section id="vista-zonas" class="vista" hidden>
-      <h2 class="vista__titulo">Zonas de Ciudad Bolívar</h2>
+      <header class="seccion-cabe">
+        <h2 class="seccion-titulo">Zonas de Ciudad Bolívar</h2>
+        <p class="seccion-intro">Consulta las Unidades de Planeamiento Zonal (UPZ) de la localidad.</p>
+      </header>
       <div id="zonas-destino"></div>
     </section>
 
   </main>
 
+  <!-- ===================== PIE ===================== -->
   <footer class="pie">
-    <p class="pie__aviso">
-      <span aria-hidden="true">ℹ️</span>
-      Esta aplicación es <strong>informativa</strong> y <strong>no constituye un diagnóstico médico</strong>.
-      Ante síntomas o dudas de salud, consulta a tu profesional de salud.
-    </p>
-    <p class="pie__meta">
-      Fuente de datos: IDEAM / SISAIRE (datos.gov.co, <code>g4t8-zkc3</code>).
-      MobiAire Materno — Universidad Distrital Francisco José de Caldas.
-    </p>
+    <div class="envoltura">
+      <p class="pie__aviso">
+        <svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><circle cx="10" cy="10" r="9" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M10 6v0.5M10 9v5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        <span>Esta aplicación es <strong>informativa</strong> y <strong>no constituye un diagnóstico médico</strong>. Ante síntomas o dudas de salud, consulta a tu profesional de salud.</span>
+      </p>
+      <p class="pie__meta">
+        Fuente de datos: IDEAM / SISAIRE (datos.gov.co · <code>g4t8-zkc3</code>) ·
+        MobiAire Materno — Universidad Distrital Francisco José de Caldas.
+      </p>
+    </div>
   </footer>
 
   <script src="app.js"></script>

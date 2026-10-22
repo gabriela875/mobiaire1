@@ -59,8 +59,14 @@ python -m web.server --demo-refrescar # regenera ingesta/resultados_demo.json (s
 ```
 
 Pantallas: **Semáforo** (estación destacada con ICA, PM2.5/PM10, fechas y avisos),
-**Estaciones** (lista y detalle) y **Zonas** (selector de UPZ de Ciudad Bolívar;
-la asociación zona↔estación queda pendiente hasta tener datos geográficos verificables).
+**Estaciones** (lista y detalle) y **Zonas** (selector de las 8 UPZ de Ciudad Bolívar
+con su descripción; la asociación zona↔estación queda **pendiente** hasta tener datos
+geográficos verificables — no se inventan cercanías ni coordenadas).
+
+Identidad visual propia (sin librerías ni imágenes externas): estética ambiental y de
+salud con verdes naturales, fondo marfil y acento coral; logotipo SVG embebido. Los
+estados se comunican con **color + icono + texto** (nunca solo color) y la interfaz es
+responsive (en móvil prioriza ICA, mediciones y fecha de actualización).
 
 El **modo demostración** (interruptor en la interfaz) usa `ingesta/resultados_demo.json`,
 se rotula siempre como «DEMO — DATOS SIMULADOS» y nunca mezcla ni pisa los datos reales.
