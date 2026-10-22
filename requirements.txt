@@ -1,0 +1,4 @@
+requests>=2.31
+pytest>=8.0
+# Solo si van a escribir en Firestore (Sprint 1, historia 3):
+# firebase-admin>=6.5
