@@ -43,3 +43,32 @@ El dataset `g4t8-zkc3` termina el 2024-12-31. Con `FECHA_REFERENCIA=auto` (defec
 calcula con esa fecha como referencia, marca `datos_historicos: true` y cada estación sale
 `desactualizado`. Para un piloto en tiempo real hace falta otra fuente (ver docs/decisiones_tecnicas.md).
 La demo escribe en `resultados_demo.json` y nunca mezcla con los datos reales.
+
+## Interfaz web (Sprint 1 y 2)
+
+Aplicación web visual y responsive (semáforo de calidad del aire) construida solo
+con la **biblioteca estándar de Python** (`http.server`) + HTML + CSS + JavaScript.
+No requiere Flask/FastAPI ni dependencias adicionales. El servidor **solo lee** los
+resultados ya generados por el motor (`ingesta/resultados.json`): abrir o actualizar
+la página **nunca** ejecuta la ingesta ni recalcula el ICA.
+
+```bash
+python -m web.server                 # abre en http://127.0.0.1:8000
+python -m web.server --port 8080     # otro puerto
+python -m web.server --demo-refrescar # regenera ingesta/resultados_demo.json (sin internet)
+```
+
+Pantallas: **Semáforo** (estación destacada con ICA, PM2.5/PM10, fechas y avisos),
+**Estaciones** (lista y detalle) y **Zonas** (selector de las 8 UPZ de Ciudad Bolívar
+con su descripción; la asociación zona↔estación queda **pendiente** hasta tener datos
+geográficos verificables — no se inventan cercanías ni coordenadas).
+
+Identidad visual propia (sin librerías ni imágenes externas): estética ambiental y de
+salud con verdes naturales, fondo marfil y acento coral; logotipo SVG embebido. Los
+estados se comunican con **color + icono + texto** (nunca solo color) y la interfaz es
+responsive (en móvil prioriza ICA, mediciones y fecha de actualización).
+
+El **modo demostración** (interruptor en la interfaz) usa `ingesta/resultados_demo.json`,
+se rotula siempre como «DEMO — DATOS SIMULADOS» y nunca mezcla ni pisa los datos reales.
+Los datos reales son **históricos** (dataset hasta dic-2024) y la interfaz lo advierte
+de forma visible; no se presentan como la calidad del aire actual.

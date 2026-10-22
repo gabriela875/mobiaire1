@@ -1,0 +1,499 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#3f5e4d">
+<title>MobiAire Materno — Prototipo visual (DEMO)</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+<style>
+/* ======================================================================
+   PROTOTIPO — MobiAire Materno (revisión 2)
+   Dirección según referencia: BLANCO predominante (sin beige), verde oscuro
+   solo como banda de acento. Tipografías DIFERENCIADAS (títulos sans muy bold
+   y apretados; cuerpo sans humanista; datos en otra). SIN burbujas/tarjetas:
+   composición abierta, separada por tipografía, líneas finas y espacio.
+   Todo DEMO.
+   ====================================================================== */
+:root{
+  --verde:#3f5e4d; --verde-hondo:#2c4337; --salvia:#8fae9b; --salvia-claro:#d4e2d9;
+  --tinta:#1f2a24; --tinta-suave:#6a7670; --linea:#e7eae8; --linea-fuerte:#cfd6d2;
+  --coral:#d98468; --coral-hondo:#c06a4e;
+  --n-verde:#2f8f54; --n-naranja:#c9780f; --n-rojo:#b3362f; --n-gris:#6b7280;
+  /* Títulos: sans muy bold y condensada. Cuerpo: sans humanista. Datos: geométrica. */
+  --titulo:"Arial Narrow","Helvetica Neue",Arial,sans-serif;
+  --cuerpo:"Segoe UI",system-ui,Roboto,Helvetica,Arial,sans-serif;
+  --dato:"Trebuchet MS","Segoe UI",system-ui,sans-serif;
+  --ancho:1040px;
+}
+*{box-sizing:border-box;}
+body{margin:0;font-family:var(--cuerpo);color:var(--tinta);background:#fff;line-height:1.6;-webkit-font-smoothing:antialiased;}
+.envoltura{max-width:var(--ancho);margin:0 auto;padding:0 24px;}
+a{color:var(--coral-hondo);}
+:focus-visible{outline:3px solid var(--coral);outline-offset:2px;}
+h1,h2,h3{font-family:var(--titulo);font-weight:800;letter-spacing:-.01em;color:var(--verde-hondo);
+  text-transform:none;line-height:1.02;}
+
+/* Rótulo DEMO: barra fina superior y sello discreto, sin beige */
+.demo-cinta{background:var(--verde-hondo);color:#eaf1ec;font-size:.8rem;text-align:center;padding:7px 14px;letter-spacing:.02em;}
+.demo-cinta strong{color:#fff;letter-spacing:.06em;}
+.demo-fijo{position:fixed;z-index:1200;right:14px;bottom:14px;background:var(--coral-hondo);color:#fff;
+  font-weight:700;letter-spacing:.08em;font-size:.68rem;padding:7px 12px;}
+
+/* ---------- Barra superior PLANA (sin pastilla, sin caja) ---------- */
+.topbar{border-bottom:1px solid var(--linea);background:#fff;position:sticky;top:0;z-index:1000;}
+.topbar__fila{display:flex;align-items:center;gap:20px;padding:16px 0;}
+.marca{display:flex;align-items:center;gap:11px;}
+.marca__nom{font-family:var(--titulo);font-weight:800;font-size:1.5rem;color:var(--verde-hondo);line-height:1;}
+.marca__nom span{color:var(--coral-hondo);font-weight:800;}
+.topbar__nav{margin-left:auto;display:flex;align-items:center;gap:26px;}
+.nav-link{font-family:var(--cuerpo);font-size:.92rem;font-weight:600;color:var(--tinta-suave);
+  background:none;border:none;cursor:pointer;padding:4px 0;border-bottom:2px solid transparent;}
+.nav-link:hover,.nav-link[aria-current="true"]{color:var(--verde-hondo);border-bottom-color:var(--salvia);}
+.btn-solido{font-family:var(--cuerpo);font-weight:700;font-size:.9rem;color:#fff;background:var(--verde);
+  border:none;cursor:pointer;padding:10px 18px;}
+.btn-solido:hover{background:var(--verde-hondo);}
+.btn-linea{font-family:var(--cuerpo);font-weight:700;font-size:.9rem;color:var(--verde-hondo);background:none;
+  border:1px solid var(--linea-fuerte);cursor:pointer;padding:9px 16px;}
+.btn-linea:hover{border-color:var(--salvia);}
+
+/* ---------- Hero (blanco, tipografía protagonista, sin caja) ---------- */
+.hero{padding:60px 0 20px;}
+.hero__kicker{font-family:var(--cuerpo);color:var(--coral-hondo);font-weight:700;font-size:.78rem;letter-spacing:.14em;text-transform:uppercase;}
+.hero__titulo{font-family:var(--titulo);font-weight:800;font-size:clamp(2.6rem,7vw,5rem);line-height:.98;margin:10px 0 10px;}
+.hero__sub{font-family:var(--cuerpo);color:var(--tinta-suave);max-width:54ch;font-size:1.05rem;margin:0;}
+
+/* Dato del aire: abierto, separado por una línea vertical, SIN tarjeta */
+.aire{display:grid;grid-template-columns:auto 1px 1fr;gap:34px;align-items:center;margin:40px 0 10px;padding:0;}
+.aire__sep{background:var(--linea);width:1px;height:150px;align-self:center;}
+.disco{width:160px;height:160px;border-radius:50%;display:grid;place-items:center;border:3px solid;}
+.disco .n{font-family:var(--dato);font-size:3.6rem;font-weight:700;line-height:1;}
+.disco .e{font-family:var(--cuerpo);font-size:.66rem;letter-spacing:.08em;color:var(--tinta-suave);margin-top:4px;text-transform:uppercase;}
+.disco.verde{border-color:var(--n-verde);color:var(--n-verde);}
+.disco.naranja{border-color:var(--n-naranja);color:var(--n-naranja);}
+.disco.rojo{border-color:var(--n-rojo);color:var(--n-rojo);}
+.aire__orig{font-family:var(--cuerpo);display:inline-flex;align-items:center;gap:7px;color:var(--verde-hondo);
+  font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;}
+.aire__est{font-family:var(--titulo);font-weight:800;font-size:2rem;margin:6px 0 2px;}
+.aire__ubic{font-family:var(--cuerpo);color:var(--tinta-suave);font-size:.88rem;margin:0;}
+.etq-nivel{font-family:var(--cuerpo);display:inline-flex;align-items:center;gap:7px;font-weight:800;font-size:1rem;margin-top:12px;padding-bottom:2px;border-bottom:3px solid;}
+.etq-nivel.verde{color:var(--n-verde);border-color:var(--n-verde);}
+.etq-nivel.naranja{color:var(--n-naranja);border-color:var(--n-naranja);}
+.etq-nivel.rojo{color:var(--n-rojo);border-color:var(--n-rojo);}
+.aire__expl{font-family:var(--cuerpo);margin:10px 0 0;font-size:.94rem;color:var(--tinta);max-width:48ch;}
+/* Mediciones: cifras separadas por líneas, no cajas */
+.pmfila{display:flex;gap:30px;margin-top:18px;}
+.pm b{font-family:var(--dato);display:block;font-size:1.5rem;color:var(--verde-hondo);font-weight:700;}
+.pm span{font-family:var(--cuerpo);font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:var(--tinta-suave);font-weight:700;}
+.pm small{font-family:var(--cuerpo);font-size:.74rem;color:var(--tinta-suave);}
+.aire__meta{font-family:var(--cuerpo);margin-top:18px;font-size:.8rem;color:var(--tinta-suave);display:flex;gap:22px;flex-wrap:wrap;}
+.aire__meta b{color:var(--tinta);font-weight:600;}
+
+/* Panel del dato RECIENTE de WAQI para Ciudad Bolívar (vía A, escala distinta) */
+.cbwaqi{margin-top:24px;padding-top:22px;border-top:1px dashed var(--linea-fuerte);}
+.cbwaqi__cabe{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;}
+.cbwaqi__tag{font-family:var(--cuerpo);font-weight:800;font-size:.74rem;letter-spacing:.06em;text-transform:uppercase;color:var(--coral-hondo);border-bottom:2px solid var(--coral);padding-bottom:3px;}
+.cbwaqi__escala{font-family:var(--cuerpo);font-size:.78rem;color:var(--tinta-suave);}
+.cbwaqi__cuerpo{display:flex;gap:30px;flex-wrap:wrap;align-items:center;margin-top:14px;}
+.cbwaqi__aqi{font-family:var(--dato);font-size:2.4rem;font-weight:700;line-height:1;color:var(--verde-hondo);}
+.cbwaqi__aqi small{font-family:var(--cuerpo);display:block;font-size:.66rem;letter-spacing:.06em;color:var(--tinta-suave);text-transform:uppercase;}
+.cbwaqi__sub{font-family:var(--cuerpo);font-size:.86rem;color:var(--tinta);}
+.cbwaqi__sub b{font-family:var(--dato);}
+.cbwaqi__meta{font-family:var(--cuerpo);font-size:.78rem;color:var(--tinta-suave);}
+.cbwaqi__meta b{color:var(--tinta);font-weight:600;}
+.cbwaqi--aviso{font-family:var(--cuerpo);font-size:.85rem;color:#8a5a00;background:#fbeed9;border:1px solid #ecc488;padding:10px 14px;}
+
+/* ---------- Pasos 01–04 (números marca de agua, sin cajas) ---------- */
+.pasos{display:grid;grid-template-columns:repeat(4,1fr);gap:28px;margin:66px 0 20px;}
+.paso__num{font-family:var(--titulo);font-size:4rem;font-weight:800;color:#eef1ef;line-height:.8;}
+.paso__t{font-family:var(--titulo);font-weight:800;font-size:1.25rem;margin:4px 0 4px;}
+.paso__d{font-family:var(--cuerpo);font-size:.86rem;color:var(--tinta-suave);margin:0;}
+.paso__ilu{margin-top:14px;}
+
+/* ---------- Banda verde curva (igual que la referencia) ---------- */
+.banda{background:var(--verde);color:#e8f0ea;margin-top:64px;padding:52px 0 46px;border-radius:0 0 42% 42%/0 0 54px 54px;}
+.banda h2{color:#fff;font-size:2rem;margin:0 0 4px;}
+.banda .intro{font-family:var(--cuerpo);color:#c8dacd;margin:0 0 26px;font-size:.98rem;}
+.vias{display:grid;grid-template-columns:1fr 1px 1fr;gap:30px;}
+.vias__sep{background:rgba(255,255,255,.22);width:1px;}
+.via__tag{font-family:var(--cuerpo);display:inline-flex;align-items:center;gap:7px;font-size:.72rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding-bottom:3px;border-bottom:2px solid;}
+.via--reciente .via__tag{color:#f0b7a6;border-color:var(--coral);}
+.via--historico .via__tag{color:var(--salvia-claro);border-color:var(--salvia);}
+.via h3{color:#fff;font-size:1.3rem;margin:12px 0 2px;}
+.via ul{font-family:var(--cuerpo);margin:10px 0 0;padding-left:18px;font-size:.88rem;color:#dbe7df;}
+.via ul li{margin-bottom:5px;}
+.via__pie{font-family:var(--cuerpo);margin-top:12px;font-size:.76rem;color:#aec5b6;}
+
+/* ---------- Estaciones + mapa (sin tarjetas; filas con línea inferior) ---------- */
+.seccion{padding:52px 0;}
+.seccion__cabe{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;flex-wrap:wrap;margin-bottom:22px;}
+.seccion__t{font-size:2rem;margin:0;}
+.seccion__s{font-family:var(--cuerpo);color:var(--tinta-suave);margin:4px 0 0;font-size:.92rem;}
+.mapa-wrap{display:grid;grid-template-columns:1.3fr 1fr;gap:34px;align-items:start;}
+#mapa{height:400px;border:1px solid var(--linea);overflow:hidden;background:var(--salvia-claro);}
+#mapa .mapa-fallback{height:100%;display:grid;place-items:center;text-align:center;color:var(--verde-hondo);padding:20px;font-family:var(--cuerpo);}
+.listado{display:flex;flex-direction:column;}
+.est{display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center;background:none;
+  border:none;border-bottom:1px solid var(--linea);padding:14px 2px;cursor:pointer;text-align:left;width:100%;}
+.est:hover{background:#f7faf8;}
+.est[aria-pressed="true"]{box-shadow:inset 3px 0 0 var(--verde);}
+.est__p{width:12px;height:12px;border-radius:50%;flex:none;}
+.est__p.verde{background:var(--n-verde);}.est__p.naranja{background:var(--n-naranja);}.est__p.rojo{background:var(--n-rojo);}
+.est__n{font-family:var(--cuerpo);margin:0;font-weight:700;color:var(--verde-hondo);font-size:.98rem;}
+.est__m{font-family:var(--cuerpo);margin:1px 0 0;font-size:.78rem;color:var(--tinta-suave);}
+.est__i{font-family:var(--dato);font-size:1.5rem;font-weight:700;line-height:1;}
+.est__i.verde{color:var(--n-verde);}.est__i.naranja{color:var(--n-naranja);}.est__i.rojo{color:var(--n-rojo);}
+.ubic-aviso{font-family:var(--cuerpo);font-size:.78rem;color:var(--tinta-suave);margin:14px 0 0;}
+
+.leaflet-popup-content{font-family:var(--cuerpo);}
+.pop__n{font-weight:800;color:var(--verde-hondo);}.pop__d{font-size:.8rem;color:var(--tinta-suave);}
+
+/* ---------- Pie (blanco, sobrio) ---------- */
+.pie{border-top:1px solid var(--linea);padding:30px 0 42px;margin-top:8px;}
+.pie__aviso{font-family:var(--cuerpo);display:flex;gap:10px;align-items:flex-start;color:var(--verde-hondo);font-size:.88rem;margin:0 0 10px;}
+.pie__meta{font-family:var(--cuerpo);font-size:.76rem;color:var(--tinta-suave);margin:0;}
+.pie__meta code{background:#f3f5f4;border:1px solid var(--linea);padding:1px 5px;}
+
+/* ---------- Responsive ---------- */
+@media(max-width:820px){
+  .pasos{grid-template-columns:1fr 1fr;}
+  .vias{grid-template-columns:1fr;} .vias__sep{display:none;}
+  .mapa-wrap{grid-template-columns:1fr;}
+}
+@media(max-width:560px){
+  .topbar__nav{gap:14px;}
+  .nav-link{display:none;}
+  .aire{grid-template-columns:1fr;gap:20px;} .aire__sep{display:none;}
+  .disco{width:132px;height:132px;} .disco .n{font-size:2.9rem;}
+  .pmfila{gap:22px;}
+}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;}}
+</style>
+</head>
+<body>
+<div class="demo-fijo" aria-hidden="true">DEMO · SIMULADO</div>
+<div class="demo-cinta" role="status"><strong>DEMO — DATOS SIMULADOS.</strong> Prototipo visual de MobiAire Materno. Todos los valores son ficticios; no son mediciones reales ni provienen de WAQI o del motor del proyecto.</div>
+
+<!-- ===================== BARRA SUPERIOR PLANA ===================== -->
+<header class="topbar"><div class="envoltura"><div class="topbar__fila">
+  <div class="marca">
+    <svg viewBox="0 0 48 48" width="38" height="38" role="img" aria-label="MobiAire Materno">
+      <circle cx="24" cy="24" r="22" fill="#e7f1ea"/>
+      <clipPath id="c"><circle cx="24" cy="24" r="22"/></clipPath>
+      <g clip-path="url(#c)">
+        <path d="M4 40 Q10 26 22 30 Q13 36 9 44 Z" fill="#bcdcc8"/>
+        <path d="M44 15 Q33 14 30 24 Q39 20 45 23 Z" fill="#a8d0b7"/>
+        <circle cx="30" cy="13" r="4.2" fill="#2f6b4f"/>
+        <path d="M28 17 q6 2 7 11 q1 9 -2 18 l-13 0 q-2 -7 .7 -12 q-7 -1.5 -7 -9 q0 -6 6 -8 q4.5 -1.5 8 .8 Z" fill="#3d8362"/>
+        <circle cx="18" cy="33" r="6.6" fill="#d98468"/>
+      </g>
+    </svg>
+    <div class="marca__nom">MobiAire <span>Materno</span></div>
+  </div>
+  <nav class="topbar__nav" aria-label="Secciones">
+    <button class="nav-link" aria-current="true" type="button">Inicio</button>
+    <button class="nav-link" type="button">Estaciones</button>
+    <button class="nav-link" type="button">Mapa</button>
+    <button class="btn-linea" id="btn-ubic" type="button">Cerca de mí</button>
+  </nav>
+</div></div></header>
+
+<main>
+<!-- ===================== HERO ===================== -->
+<section class="envoltura hero">
+  <span class="hero__kicker">Ciudad Bolívar · Bogotá, D.C.</span>
+  <h1 class="hero__titulo">Monitoreo que<br>protege tu entorno</h1>
+  <p class="hero__sub">Consulta la calidad del aire de las estaciones cercanas a tu entorno. Pensado para el cuidado del embarazo.</p>
+
+  <div class="aire">
+    <div class="disco verde"><div style="text-align:center"><div class="n">42</div><div class="e">ICA 0–500</div></div></div>
+    <div class="aire__sep" aria-hidden="true"></div>
+    <div class="aire__cuerpo">
+      <span class="aire__orig">● Datos históricos · motor MobiAire</span>
+      <h2 class="aire__est">Ciudad Bolívar</h2>
+      <p class="aire__ubic">SDA · estación de referencia (ejemplo)</p>
+      <div class="etq-nivel verde">🟢 Verde · Aire aceptable</div>
+      <p class="aire__expl">La calidad del aire es satisfactoria para la mayoría de las personas. <em>(Valor de ejemplo.)</em></p>
+      <div class="pmfila">
+        <div class="pm"><span>PM2.5</span><b>18 <small>µg/m³</small></b><small>prom. 24 h · ICA 61</small></div>
+        <div class="pm"><span>PM10</span><b>39 <small>µg/m³</small></b><small>prom. 24 h · ICA 36</small></div>
+      </div>
+      <div class="aire__meta">
+        <span>Medición: <b>1 ene 2025, 00:00</b></span>
+        <span>Sincronizado: <b>22 oct 2026</b></span>
+        <span>Consulta: <b>ahora</b></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Vía A: dato RECIENTE de WAQI para Ciudad Bolívar (A522148). Escala distinta. -->
+  <div id="cb-waqi" class="cbwaqi" hidden>
+    <div class="cbwaqi__cabe">
+      <span class="cbwaqi__tag">◐ Dato reciente · WAQI</span>
+      <span class="cbwaqi__escala">Índice de la fuente (escala US-EPA) — <b>no es el ICA del proyecto</b></span>
+    </div>
+    <div class="cbwaqi__cuerpo" id="cb-waqi-cuerpo"><!-- se rellena por JS --></div>
+  </div>
+</section>
+
+<!-- ===================== PASOS 01–04 ===================== -->
+<section class="envoltura">
+  <div class="pasos">
+    <div class="paso"><div class="paso__num">01</div><h3 class="paso__t">Explora</h3><p class="paso__d">Estaciones de Bogotá en un mapa claro.</p>
+      <svg class="paso__ilu" viewBox="0 0 80 50" width="90" height="56" aria-hidden="true"><path d="M20 38V18l12-6 14 6 14-5v25z" fill="#eef1ef"/><path d="M34 12v26M48 18v20" stroke="#8fae9b" stroke-width="1.5"/><circle cx="41" cy="22" r="4" fill="#d98468"/></svg></div>
+    <div class="paso"><div class="paso__num">02</div><h3 class="paso__t">Consulta</h3><p class="paso__d">Índice, contaminantes y hora de medición.</p>
+      <svg class="paso__ilu" viewBox="0 0 80 50" width="90" height="56" aria-hidden="true"><rect x="24" y="12" width="32" height="26" fill="#eef1ef"/><circle cx="40" cy="25" r="7" fill="none" stroke="#3d8362" stroke-width="2.4"/><circle cx="40" cy="25" r="2" fill="#d98468"/></svg></div>
+    <div class="paso"><div class="paso__num">03</div><h3 class="paso__t">Ubícate</h3><p class="paso__d">Estaciones cerca de ti, solo si lo pides.</p>
+      <svg class="paso__ilu" viewBox="0 0 80 50" width="90" height="56" aria-hidden="true"><path d="M40 10c-7 0-12 5-12 12 0 9 12 20 12 20s12-11 12-20c0-7-5-12-12-12z" fill="#8fae9b"/><circle cx="40" cy="22" r="4.5" fill="#fff"/></svg></div>
+    <div class="paso"><div class="paso__num">04</div><h3 class="paso__t">Cuídate</h3><p class="paso__d">Orientación clara, sin tecnicismos.</p>
+      <svg class="paso__ilu" viewBox="0 0 80 50" width="90" height="56" aria-hidden="true"><path d="M40 36s-14-8-14-18a7 7 0 0 1 14-2 7 7 0 0 1 14 2c0 10-14 18-14 18z" fill="#d98468"/></svg></div>
+  </div>
+</section>
+
+<!-- ===================== BANDA VERDE: dos vías ===================== -->
+<section class="banda"><div class="envoltura">
+  <h2>Dos fuentes, nunca mezcladas</h2>
+  <p class="intro">MobiAire Materno distingue siempre de dónde viene cada dato.</p>
+  <div class="vias">
+    <div class="via via--reciente">
+      <span class="via__tag">◐ Datos recientes · WAQI</span>
+      <h3>Índice de la fuente (WAQI)</h3>
+      <ul>
+        <li>Índice <b>reportado por WAQI</b> (escala US-EPA), no es el ICA del proyecto.</li>
+        <li>Estación, contaminantes, fecha de medición y de consulta.</li>
+        <li>Atribución: World Air Quality Index Project + SDA/RMCAB.</li>
+      </ul>
+      <p class="via__pie">En el prototipo estos valores son de ejemplo. Se conectará tras tu aprobación.</p>
+    </div>
+    <div class="vias__sep" aria-hidden="true"></div>
+    <div class="via via--historico">
+      <span class="via__tag">● Datos históricos · motor MobiAire</span>
+      <h3>ICA propio (Res. 2254/2017)</h3>
+      <ul>
+        <li>ICA calculado por <b>nuestro motor</b>, semáforo verde/naranja/rojo.</li>
+        <li>Fuente IDEAM/SISAIRE — <b>histórico</b> (hasta dic-2024).</li>
+        <li>No se recalcula con WAQI ni se presenta como actual.</li>
+      </ul>
+      <p class="via__pie">Son los datos reales que ya tiene el proyecto en resultados.json.</p>
+    </div>
+  </div>
+</div></section>
+
+<!-- ===================== ESTACIONES + MAPA ===================== -->
+<section class="envoltura seccion">
+  <div class="seccion__cabe">
+    <div>
+      <h2 class="seccion__t">Explora las estaciones</h2>
+      <p class="seccion__s">Marcadores de ejemplo. Al conectar WAQI se mostrarán solo estaciones con coordenadas verificables.</p>
+    </div>
+    <button class="btn-solido" id="btn-ubic2" type="button">Ver estaciones cerca de mí</button>
+  </div>
+  <div class="mapa-wrap">
+    <div id="mapa"><div class="mapa-fallback">
+      <div>
+        <svg viewBox="0 0 48 48" width="48" height="48" aria-hidden="true"><path d="M24 4C15 4 8 11 8 20c0 12 16 24 16 24s16-12 16-24C40 11 33 4 24 4z" fill="none" stroke="#3d8362" stroke-width="2.4"/><circle cx="24" cy="20" r="5" fill="#d98468"/></svg>
+        <p>Mapa de Bogotá (Leaflet + OpenStreetMap).<br>Si hay internet se cargará aquí, con marcadores de ejemplo.</p>
+      </div>
+    </div></div>
+    <div>
+      <div class="listado" id="listado"></div>
+      <p class="ubic-aviso" id="ubic-aviso">La ubicación es opcional: solo se usa si pulsas «Cerca de mí». No se guarda ni se comparte.</p>
+    </div>
+  </div>
+</section>
+</main>
+
+<!-- ===================== PIE ===================== -->
+<footer class="pie"><div class="envoltura">
+  <p class="pie__aviso">
+    <svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><circle cx="10" cy="10" r="9" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M10 6v.3M10 9v5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+    <span>Aplicación <strong>informativa</strong>. <strong>No es un diagnóstico médico</strong>; ante dudas de salud consulta a tu profesional.</span>
+  </p>
+  <p class="pie__meta">
+    Prototipo DEMO · Fuentes a integrar: WAQI / AQICN (atribución obligatoria) · IDEAM/SISAIRE <code>g4t8-zkc3</code> ·
+    Mapa © OpenStreetMap contributors · MobiAire Materno — Universidad Distrital Francisco José de Caldas.
+  </p>
+</div></footer>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script>
+/* ============================================================
+   Prototipo conectado a datos REALES con respaldo DEMO.
+   - Vía A (mapa/lista): WAQI vía /api/waqi/estaciones (índice de origen).
+   - Vía C (ficha histórica): /api/estacion/ciudad_bolivar (ICA del motor).
+   Si no hay token/red, se usan datos DEMO claramente rotulados.
+   Las dos escalas NUNCA se mezclan.
+   ============================================================ */
+"use strict";
+var mapa=null, marcadores={}, DATOS=[];  // DATOS = estaciones mostradas (reales o demo)
+
+/* ----- Datos de respaldo DEMO (solo si no hay WAQI disponible) ----- */
+var ESTACIONES_DEMO = [
+  {uid:"d1", nombre:"Kennedy (ej.)",   lat:4.6249, lon:-74.16135, aqi:92, hora:"ejemplo", demo:true},
+  {uid:"d2", nombre:"Tunal (ej.)",     lat:4.57619,lon:-74.13093, aqi:42, hora:"ejemplo", demo:true},
+  {uid:"d3", nombre:"Carvajal (ej.)",  lat:4.5958, lon:-74.14855, aqi:74, hora:"ejemplo", demo:true},
+  {uid:"d4", nombre:"Usaquén (ej.)",   lat:4.70939,lon:-74.03199, aqi:17, hora:"ejemplo", demo:true}
+];
+
+/* ----- Color por AQI de WAQI (escala US-EPA, NO el semáforo del proyecto) ----- */
+function colorAQI(a){
+  if(a==null||a==="-"||isNaN(+a)) return "#6b7280";
+  a=+a;
+  if(a<=50) return "#2f8f54";
+  if(a<=100) return "#c9780f";
+  return "#b3362f";
+}
+function esc(t){var d=document.createElement("div");d.textContent=(t==null?"":""+t);return d.innerHTML;}
+
+/* ----- Cargar estaciones (WAQI real; si falla, DEMO) ----- */
+function cargarEstaciones(){
+  fetch("/api/waqi/estaciones").then(function(r){
+    if(!r.ok) throw new Error("waqi "+r.status);
+    return r.json();
+  }).then(function(d){
+    var lista=(d.estaciones||[]).filter(function(e){return e.reciente;});
+    if(!lista.length) throw new Error("sin estaciones recientes");
+    DATOS = lista.map(function(e){
+      return {uid:e.uid, nombre:e.nombre, lat:e.lat, lon:e.lon, aqi:e.aqi_waqi,
+              hora:e.medido_iso||"", demo:false};
+    });
+    pintar(false);
+  }).catch(function(){
+    DATOS = ESTACIONES_DEMO.slice();
+    pintar(true);
+  });
+}
+
+function pintar(esDemo){
+  // Rótulo honesto en la sección si estamos en respaldo DEMO
+  var sub=document.querySelector(".seccion__s");
+  if(sub){
+    sub.innerHTML = esDemo
+      ? '<b style="color:#c06a4e">DEMO — datos de ejemplo</b> (no hay WAQI disponible: falta token en el backend o no hay conexión). Índice de la fuente, escala WAQI.'
+      : 'Datos recientes de <b>WAQI</b> (índice de origen, escala US-EPA — no es el ICA del proyecto). © OpenStreetMap · OAB/WAQI.';
+  }
+  var cont=document.getElementById("listado"); cont.innerHTML="";
+  DATOS.forEach(function(e){
+    var nivelColorTxt = (+e.aqi<=50?"bajo":(+e.aqi<=100?"medio":"alto"));
+    var b=document.createElement("button");
+    b.className="est"; b.setAttribute("aria-pressed","false"); b.dataset.uid=e.uid;
+    b.innerHTML='<span class="est__p" style="background:'+colorAQI(e.aqi)+'"></span>'+
+      '<span><span class="est__n">'+esc(e.nombre)+'</span>'+
+      '<span class="est__m">AQI WAQI '+(nivelColorTxt)+' · medido '+esc(e.hora)+(e.demo?' · DEMO':'')+'</span></span>'+
+      '<span class="est__i" style="color:'+colorAQI(e.aqi)+'">'+esc(e.aqi==null?"—":e.aqi)+'</span>';
+    b.onclick=function(){ seleccionar(e.uid); };
+    cont.appendChild(b);
+  });
+  dibujarMapa(esDemo);
+}
+
+function seleccionar(uid){
+  document.querySelectorAll(".est").forEach(function(x){ x.setAttribute("aria-pressed", x.dataset.uid==uid?"true":"false"); });
+  var e=DATOS.find(function(x){return ""+x.uid===""+uid;});
+  if(e && marcadores[uid] && mapa){ mapa.setView([e.lat,e.lon],12); marcadores[uid].openPopup(); }
+}
+
+function dibujarMapa(esDemo){
+  try{
+    if(!window.L) return;
+    var cont=document.getElementById("mapa"); cont.innerHTML=""; marcadores={};
+    mapa=L.map("mapa").setView([4.63,-74.11],11);
+    L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:18,attribution:'© OpenStreetMap contributors'}).addTo(mapa);
+    DATOS.forEach(function(e){
+      if(e.lat==null||e.lon==null) return;
+      var m=L.circleMarker([e.lat,e.lon],{radius:10,color:"#fff",weight:2,fillColor:colorAQI(e.aqi),fillOpacity:1}).addTo(mapa);
+      m.bindPopup('<div class="pop__n">'+esc(e.nombre)+'</div><div class="pop__d">AQI WAQI '+esc(e.aqi)+' <em>(escala US-EPA, no es el ICA)</em><br>medido '+esc(e.hora)+(e.demo?'<br><em>DEMO — dato simulado</em>':'')+'</div>');
+      m.on("click",function(){ seleccionar(e.uid); });
+      marcadores[e.uid]=m;
+    });
+  }catch(err){}
+}
+
+/* ----- Vía C: ficha HISTÓRICA real de Ciudad Bolívar (motor ICA) ----- */
+function cargarHistoricoCB(){
+  var disco=document.querySelector(".disco"), est=document.querySelector(".aire__est"),
+      ubic=document.querySelector(".aire__ubic"), orig=document.querySelector(".aire__orig");
+  fetch("/api/estacion/ciudad_bolivar").then(function(r){ if(!r.ok) throw 0; return r.json(); })
+  .then(function(d){
+    var e=d.estacion; if(!e||e.estado!=="ok") throw 0;
+    var niv={verde:["verde","🟢 Verde · Aire aceptable"],naranja:["naranja","🟠 Naranja"],rojo:["rojo","🔴 Rojo"]}[e.nivel]||["verde",e.nivel];
+    disco.className="disco "+niv[0];
+    disco.querySelector(".n").textContent=e.ica;
+    est.textContent=e.estacion;
+    ubic.textContent=(e.municipio||"")+" · "+(e.autoridad||"");
+    orig.textContent="● Datos históricos · motor MobiAire (IDEAM, "+(d.datos_historicos?"histórico":"")+")";
+    var etq=document.querySelector(".etq-nivel"); etq.className="etq-nivel "+niv[0]; etq.textContent=niv[1];
+    document.querySelector(".aire__expl").innerHTML="ICA calculado por el motor del proyecto (Res. 2254/2017). <b>Dato histórico, no refleja la calidad del aire actual.</b>";
+    var pms=document.querySelectorAll(".pm b");
+    if(pms[0]) pms[0].innerHTML=(e.pm25_24h==null?"N/D":e.pm25_24h)+' <small>µg/m³</small>';
+    if(pms[1]) pms[1].innerHTML=(e.pm10_24h==null?"N/D":e.pm10_24h)+' <small>µg/m³</small>';
+    var smalls=document.querySelectorAll(".pm small");
+    if(smalls[0]) smalls[0].textContent="prom. 24 h"+(e.ica_pm25!=null?" · ICA "+e.ica_pm25:"");
+    if(smalls[1]) smalls[1].textContent="prom. 24 h"+(e.ica_pm10!=null?" · ICA "+e.ica_pm10:"");
+    var meta=document.querySelector(".aire__meta");
+    if(meta) meta.innerHTML='<span>Medición: <b>'+esc(e.ultima_medicion)+'</b></span>'+
+      '<span>Sincronizado: <b>'+esc(d.generado_en)+'</b></span>'+
+      '<span>Consulta: <b>'+esc(d.consultado_en)+'</b></span>';
+  }).catch(function(){ /* deja el ejemplo DEMO que ya está en el HTML */ });
+}
+
+/* ----- Vía A: dato RECIENTE de WAQI para Ciudad Bolívar (A522148) ----- */
+function cargarWaqiCB(){
+  var panel=document.getElementById("cb-waqi"), cuerpo=document.getElementById("cb-waqi-cuerpo");
+  fetch("/api/waqi/ciudad-bolivar").then(function(r){ if(!r.ok) throw r.status; return r.json(); })
+  .then(function(d){
+    var e=d.estacion||{};
+    panel.hidden=false;
+    // Si el dato NO es reciente, mostrar estado en vez de un valor viejo
+    if(e.reciente===false){
+      cuerpo.className="cbwaqi__cuerpo";
+      cuerpo.innerHTML='<div class="cbwaqi--aviso">⚠️ La estación WAQI de Ciudad Bolívar ('+esc(e.nombre||"A522148")+
+        ') no reporta un dato reciente (última medición: '+esc(e.medido_en||"desconocida")+'). No se muestra un valor para no presentarlo como actual.</div>';
+      return;
+    }
+    cuerpo.className="cbwaqi__cuerpo";
+    cuerpo.innerHTML=
+      '<div class="cbwaqi__aqi">'+esc(e.aqi_waqi==null?"—":e.aqi_waqi)+'<small>AQI WAQI (0–500)</small></div>'+
+      '<div class="cbwaqi__sub">Estación: <b>'+esc(e.nombre||"Ciudad Bolívar")+'</b><br>'+
+        'Dominante: '+esc(e.dominante||"—")+' · sub-índice PM2.5 <b>'+esc(e.aqi_pm25==null?"N/D":e.aqi_pm25)+'</b>'+
+        ' · PM10 <b>'+esc(e.aqi_pm10==null?"N/D":e.aqi_pm10)+'</b><br>'+
+        '<span style="color:#c06a4e">Valores en sub-índice AQI, NO en µg/m³.</span></div>'+
+      '<div class="cbwaqi__meta">Medido: <b>'+esc(e.medido_en||"—")+'</b><br>'+
+        'Consulta: <b>'+esc(d.consultado_en||"—")+'</b><br>'+
+        'Fuente: WAQI · '+esc((d.atribucion||[]).join(" · "))+'</div>';
+  }).catch(function(st){
+    // Sin token (503) o fallo (502): panel con estado, no datos inventados
+    panel.hidden=false; cuerpo.className="cbwaqi__cuerpo";
+    cuerpo.innerHTML='<div class="cbwaqi--aviso">El dato reciente de WAQI para Ciudad Bolívar no está disponible ahora'+
+      (st===503?' (falta WAQI_TOKEN en el backend)':'')+'. Se muestra abajo el histórico del motor del proyecto.</div>';
+  });
+}
+
+/* ----- Ubicación OPCIONAL (solo al pulsar; no se guarda) ----- */
+function pedirUbicacion(){
+  var aviso=document.getElementById("ubic-aviso");
+  if(!navigator.geolocation){ aviso.textContent="Tu navegador no permite geolocalización; explora las estaciones manualmente."; return; }
+  aviso.textContent="Solicitando permiso de ubicación… (si lo niegas, puedes seguir explorando manualmente).";
+  navigator.geolocation.getCurrentPosition(function(pos){
+    var la=pos.coords.latitude, lo=pos.coords.longitude, cerca=null, dmin=1e9;
+    DATOS.forEach(function(e){ if(e.lat==null)return; var d=haversine(la,lo,e.lat,e.lon); if(d<dmin){dmin=d;cerca=e;} });
+    if(cerca){
+      aviso.textContent="Estación más cercana a tu ubicación: "+cerca.nombre+" ("+dmin.toFixed(1)+" km, distancia calculada). La ubicación no se guarda.";
+      if(mapa){ mapa.setView([la,lo],12); L.marker([la,lo]).addTo(mapa).bindPopup("Tu ubicación (no se guarda)").openPopup(); }
+      seleccionar(cerca.uid);
+    }
+  }, function(){ aviso.textContent="Permiso denegado. Puedes explorar las estaciones manualmente (la app sigue funcionando)."; });
+}
+function haversine(a,b,c,d){var R=6371,r=Math.PI/180,dla=(c-a)*r,dlo=(d-b)*r,
+  s=Math.sin(dla/2)**2+Math.cos(a*r)*Math.cos(c*r)*Math.sin(dlo/2)**2;return 2*R*Math.asin(Math.sqrt(s));}
+
+document.getElementById("btn-ubic").onclick=pedirUbicacion;
+document.getElementById("btn-ubic2").onclick=pedirUbicacion;
+cargarEstaciones();
+cargarHistoricoCB();
+cargarWaqiCB();
+</script>
+</body>
+</html>
