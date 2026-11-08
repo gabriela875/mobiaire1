@@ -261,6 +261,10 @@ def _ruta_feed(uid):
         return f"/feed/{uid}/"            # ya viene con arroba y es numérico
     if uid[:1].upper() == "A" and uid[1:].isdigit():
         return f"/feed/{uid}/"            # ID externo: sin @
+    # En /map/bounds WAQI entrega idx NEGATIVO para estaciones externas
+    # (p. ej. -522148). Se consultan como A{abs}: /feed/A522148/.
+    if uid.startswith("-") and uid[1:].isdigit():
+        return f"/feed/A{uid[1:]}/"
     if uid.isdigit():
         return f"/feed/@{uid}/"           # ID interno: con @
     raise ErrorWAQI(f"Identificador de estación no válido: {uid!r}")

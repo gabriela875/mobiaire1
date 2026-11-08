@@ -195,9 +195,9 @@ class Handler(BaseHTTPRequestHandler):
         from web import waqi
         if not waqi.hay_token():
             return self._error("WAQI no configurado: falta WAQI_TOKEN en .env del backend.", 503)
-        # WAQI acepta IDs internos (6235), con arroba (@6235) o externos (A522148).
-        if not re.fullmatch(r"@?\d+|A\d+", uid):
-            return self._error("uid de estación inválido (use número, @número o A+número).", 400)
+        # WAQI: IDs internos (6235, @6235), externos (A522148) o idx negativo (-522148).
+        if not re.fullmatch(r"@?\d+|A\d+|-\d+", uid):
+            return self._error("uid de estación inválido.", 400)
         try:
             return self._json(waqi.estacion(uid))
         except waqi.ErrorWAQI as e:
@@ -259,8 +259,17 @@ class Handler(BaseHTTPRequestHandler):
         uid = zona["estacion"]["uid"]
         try:
             det = waqi.estacion(uid)
-        except waqi.ErrorWAQI as e:
-            return self._error(str(e), 502)
+        except waqi.ErrorWAQI:
+            # Una estación que falla no debe tumbar la zona: estado honesto, no 502.
+            return self._json({
+                "zona": {"id": zona["id"], "nombre": zona["nombre"],
+                         "distancia_km": zona["distancia_km"]},
+                "estado": "sin_dato_reciente",
+                "estacion": {"uid": uid, "nombre": zona["estacion"].get("nombre"),
+                             "medido_bogota": None, "reciente": False},
+                "semaforo": None, "indice_waqi": None,
+                "consultado_en": tabla.get("consultado_en"),
+            })
         est = det.get("estacion", {})
         return self._json({
             "zona": {"id": zona["id"], "nombre": zona["nombre"], "distancia_km": zona["distancia_km"]},
