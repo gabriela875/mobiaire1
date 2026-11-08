@@ -72,3 +72,28 @@ El **modo demostración** (interruptor en la interfaz) usa `ingesta/resultados_d
 se rotula siempre como «DEMO — DATOS SIMULADOS» y nunca mezcla ni pisa los datos reales.
 Los datos reales son **históricos** (dataset hasta dic-2024) y la interfaz lo advierte
 de forma visible; no se presentan como la calidad del aire actual.
+
+## Asociación zona ↔ estación (Sprint 2)
+
+Cada UPZ de Ciudad Bolívar se asocia a la **estación de WAQI más cercana** con una
+**regla única**: distancia haversine entre el **centroide de la UPZ** y las estaciones,
+sin excepciones manuales por zona (`zonas/asociacion.py`).
+
+- **Centroides de las UPZ:** salen de la capa oficial de UPZ de Datos Abiertos Bogotá
+  (`datos/upz.geojson`); `scripts/generar_zonas.py` calcula el centroide ponderado por
+  área y escribe `datos/upz_coords.json`. No se inventan coordenadas: si una UPZ no tiene
+  centroide oficial, su asociación queda `pendiente`.
+- **Estaciones candidatas:** las de Bogotá que WAQI reporta con dato reciente, más la
+  estación de Ciudad Bolívar (`A522148`); sus coordenadas provienen de la respuesta de
+  WAQI, no están escritas en el código.
+- **Resultado:** la distancia se muestra como «X km al centro de la zona» y el semáforo de
+  la zona usa el **ICA estimado (derivado de WAQI)**, nunca el índice WAQI tal cual.
+
+### Límites
+- Es una aproximación: la estación más cercana al centroide **no equivale** a la calidad
+  del aire de toda la UPZ, que es heterogénea.
+- La red de WAQI/OAB **no tiene una estación dentro de cada UPZ**; varias zonas comparten
+  la misma estación cercana (p. ej. Mochuelo → Tunal ≈ 4,25 km; Jerusalén → Carvajal ≈ 3,83 km).
+- El ICA de la zona es **estimado y horario** (derivado del sub-índice WAQI US-EPA), no el
+  promedio de 24 h de la Resolución 2254. Si la estación no tiene dato reciente (< 6 h), la
+  zona se muestra en gris «Sin dato reciente», sin número.

@@ -213,6 +213,19 @@ class Handler(BaseHTTPRequestHandler):
             return self._error(str(e), 502)
 
     # --- Zonas (Sprint 2) --------------------------------------------------
+    @staticmethod
+    def _estaciones_candidatas(waqi):
+        """Estaciones recientes del bounds + Ciudad Bolívar (A522148), coords de WAQI."""
+        from zonas import asociacion
+        estaciones = [e for e in waqi.estaciones_bogota().get("estaciones", [])
+                      if e.get("reciente")]
+        # Agregar Ciudad Bolívar como candidata; sus coords salen de WAQI, no del código.
+        try:
+            cb = waqi.ciudad_bolivar().get("estacion")
+        except waqi.ErrorWAQI:
+            cb = None
+        return asociacion.agregar_ciudad_bolivar(estaciones, cb)
+
     def _zonas_asociacion(self):
         """Tabla UPZ -> estación WAQI más cercana (haversine). Sin token -> pendiente."""
         from zonas import asociacion
@@ -220,8 +233,7 @@ class Handler(BaseHTTPRequestHandler):
         estaciones = []
         if waqi.hay_token():
             try:
-                estaciones = [e for e in waqi.estaciones_bogota().get("estaciones", [])
-                              if e.get("reciente")]
+                estaciones = self._estaciones_candidatas(waqi)
             except waqi.ErrorWAQI:
                 estaciones = []
         return self._json(asociacion.asociar(estaciones))
@@ -233,8 +245,7 @@ class Handler(BaseHTTPRequestHandler):
         if not waqi.hay_token():
             return self._error("WAQI no configurado: falta WAQI_TOKEN en .env del backend.", 503)
         try:
-            estaciones = [e for e in waqi.estaciones_bogota().get("estaciones", [])
-                          if e.get("reciente")]
+            estaciones = self._estaciones_candidatas(waqi)
         except waqi.ErrorWAQI as e:
             return self._error(str(e), 502)
         tabla = asociacion.asociar(estaciones)

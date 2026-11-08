@@ -45,6 +45,31 @@ def estacion_mas_cercana(lat, lon, estaciones):
     return mejor, round(dmin, 2)
 
 
+# Estación de Ciudad Bolívar en WAQI (ID externo). Sus COORDENADAS NO van aquí:
+# se obtienen de la respuesta de WAQI y se inyectan como una estación candidata más.
+UID_CIUDAD_BOLIVAR = "A522148"
+
+
+def agregar_ciudad_bolivar(estaciones, estacion_cb):
+    """Devuelve la lista de estaciones + la de Ciudad Bolívar (si trae coords).
+
+    `estacion_cb`: dict con uid/lat/lon tal como lo entrega WAQI (coords reales),
+    o None si no se pudo consultar. No se inventan coordenadas: si viene sin
+    lat/lon, no se agrega. Si ya está en la lista (mismo uid), no se duplica.
+    """
+    if not estacion_cb or estacion_cb.get("lat") is None or estacion_cb.get("lon") is None:
+        return list(estaciones)
+    uid = estacion_cb.get("uid")
+    if any(str(e.get("uid")) == str(uid) for e in estaciones):
+        return list(estaciones)
+    return list(estaciones) + [{
+        "uid": uid,
+        "nombre": estacion_cb.get("nombre"),
+        "lat": estacion_cb["lat"],
+        "lon": estacion_cb["lon"],
+    }]
+
+
 def cargar_zonas():
     """UPZ desde web/zonas.json (lista de dicts)."""
     datos = json.loads(ZONAS_JSON.read_text(encoding="utf-8"))
@@ -103,11 +128,12 @@ def asociar(estaciones, coords_upz=None):
                          "nombre": est.get("nombre"),
                          "lat": est["lat"], "lon": est["lon"]},
             "distancia_km": dist,
+            "distancia_texto": f"{dist} km al centro de la zona" if dist is not None else None,
         })
     hay_coords = bool(coords_upz)
     return {
         "localidad": "Ciudad Bolívar",
-        "metodo": "haversine (centroide UPZ -> estación WAQI más cercana)",
+        "metodo": "haversine (centroide UPZ -> estación WAQI más cercana, sin excepciones por zona)",
         "fuente_coords_upz": "datos/upz_coords.json (oficial)" if hay_coords else "pendiente",
         "estado_global": "ok" if hay_coords else "pendiente",
         "zonas": resultado,

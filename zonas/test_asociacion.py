@@ -54,6 +54,29 @@ def test_asociar_con_coords_sinteticas_calcula_cercania():
     assert porid["mochuelo"]["estado"] == "pendiente"
 
 
+def test_agregar_ciudad_bolivar_usa_coords_de_waqi():
+    # Las coords de Ciudad Bolívar vienen de WAQI (argumento), no del código.
+    cb = {"uid": "A522148", "nombre": "Ciudad Bolivar", "lat": 4.577, "lon": -74.166}
+    ampliada = asociacion.agregar_ciudad_bolivar(ESTACIONES, cb)
+    assert any(e["uid"] == "A522148" for e in ampliada)
+    # Si WAQI no da coords, no se inventa ni se agrega
+    assert asociacion.agregar_ciudad_bolivar(ESTACIONES, None) == ESTACIONES
+    assert asociacion.agregar_ciudad_bolivar(ESTACIONES, {"uid": "A522148"}) == ESTACIONES
+    # No se duplica si ya estaba
+    ya = ESTACIONES + [cb]
+    assert len(asociacion.agregar_ciudad_bolivar(ya, cb)) == len(ya)
+
+
+def test_ciudad_bolivar_puede_ser_la_mas_cercana():
+    cb = {"uid": "A522148", "nombre": "Ciudad Bolivar", "lat": 4.577, "lon": -74.166}
+    cand = asociacion.agregar_ciudad_bolivar(ESTACIONES, cb)
+    # Centroide sintético pegado a Ciudad Bolívar -> debe ganar por haversine, sin excepción manual
+    r = asociacion.asociar(cand, coords_upz={"jerusalen": {"lat": 4.577, "lon": -74.166}})
+    jeru = next(z for z in r["zonas"] if z["id"] == "jerusalen")
+    assert jeru["estacion"]["uid"] == "A522148"
+    assert "al centro de la zona" in jeru["distancia_texto"]
+
+
 def test_asociar_no_persiste_estado():
     # Dos llamadas independientes no comparten estado (función pura).
     r1 = asociacion.asociar(ESTACIONES, coords_upz={"lucero": {"lat": 4.53, "lon": -74.15}})

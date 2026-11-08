@@ -12,6 +12,7 @@ frontend ni se devuelve en las respuestas. Este módulo:
 IMPORTANTE: no toca el motor ICA, ni resultados.json, ni la ingesta histórica.
 """
 import json
+import html
 import sys
 import time
 import urllib.parse
@@ -129,11 +130,13 @@ def _estacion_de_feed(d):
     ciudad = d.get("city", {}) or {}
     iaqi = d.get("iaqi", {}) or {}
     geo = ciudad.get("geo") or [None, None]
-    attrs = [a.get("name", "") for a in (d.get("attributions") or [])]
+    # Nombres de atribución: WAQI los entrega con entidades HTML (ej. "Bogot&aacute;").
+    attrs = [html.unescape(a.get("name", "")) for a in (d.get("attributions") or [])]
+    nombre = html.unescape(ciudad.get("name") or "")
     iso = (d.get("time", {}) or {}).get("iso")
     return {
         "uid": d.get("idx"),
-        "nombre": ciudad.get("name"),
+        "nombre": nombre,
         "lat": _num(geo[0]) if len(geo) > 0 else None,
         "lon": _num(geo[1]) if len(geo) > 1 else None,
         # AQI de WAQI (escala US-EPA, 0-500, SIN unidad). NO es el ICA del proyecto.
@@ -220,7 +223,7 @@ def estaciones_bogota(forzar=False):
         iso = st.get("time")
         estaciones.append({
             "uid": f.get("uid"),
-            "nombre": st.get("name"),
+            "nombre": html.unescape(st.get("name") or ""),
             "lat": _num(f.get("lat")),
             "lon": _num(f.get("lon")),
             "aqi_waqi": f.get("aqi"),

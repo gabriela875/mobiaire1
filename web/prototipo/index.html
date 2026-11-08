@@ -192,7 +192,7 @@ h1,h2,h3{font-family:var(--titulo);font-weight:800;letter-spacing:-.01em;color:v
 </head>
 <body>
 <div class="demo-fijo" aria-hidden="true">DEMO · SIMULADO</div>
-<div class="demo-cinta" role="status"><strong>DEMO — DATOS SIMULADOS.</strong> Prototipo visual de MobiAire Materno. Todos los valores son ficticios; no son mediciones reales ni provienen de WAQI o del motor del proyecto.</div>
+<div id="demo-cinta" class="demo-cinta" role="status" hidden><strong>DEMO — DATOS SIMULADOS.</strong> No hay datos de WAQI disponibles ahora; los valores mostrados son de ejemplo, no son mediciones reales.</div>
 
 <!-- ===================== BARRA SUPERIOR PLANA ===================== -->
 <header class="topbar"><div class="envoltura"><div class="topbar__fila">
@@ -317,7 +317,7 @@ h1,h2,h3{font-family:var(--titulo);font-weight:800;letter-spacing:-.01em;color:v
   <div class="seccion__cabe">
     <div>
       <h2 class="seccion__t">Explora las estaciones</h2>
-      <p class="seccion__s">Marcadores de ejemplo. Al conectar WAQI se mostrarán solo estaciones con coordenadas verificables.</p>
+      <p class="seccion__s">Estaciones de monitoreo de Bogotá con su índice WAQI y hora de medición.</p>
     </div>
     <button class="btn-solido" id="btn-ubic2" type="button">Ver estaciones cerca de mí</button>
   </div>
@@ -325,7 +325,7 @@ h1,h2,h3{font-family:var(--titulo);font-weight:800;letter-spacing:-.01em;color:v
     <div id="mapa"><div class="mapa-fallback">
       <div>
         <svg viewBox="0 0 48 48" width="48" height="48" aria-hidden="true"><path d="M24 4C15 4 8 11 8 20c0 12 16 24 16 24s16-12 16-24C40 11 33 4 24 4z" fill="none" stroke="#3d8362" stroke-width="2.4"/><circle cx="24" cy="20" r="5" fill="#d98468"/></svg>
-        <p>Mapa de Bogotá (Leaflet + OpenStreetMap).<br>Si hay internet se cargará aquí, con marcadores de ejemplo.</p>
+        <p>Mapa de Bogotá (Leaflet + OpenStreetMap).<br>Requiere conexión a internet; al cargar muestra las estaciones de WAQI.</p>
       </div>
     </div></div>
     <div>
@@ -389,7 +389,7 @@ function cargarEstaciones(){
     if(!lista.length) throw new Error("sin estaciones recientes");
     DATOS = lista.map(function(e){
       return {uid:e.uid, nombre:e.nombre, lat:e.lat, lon:e.lon, aqi:e.aqi_waqi,
-              hora:e.medido_iso||"", demo:false};
+              hora:e.medido_bogota||e.medido_iso||"", demo:false};
     });
     pintar(false);
   }).catch(function(){
@@ -399,6 +399,9 @@ function cargarEstaciones(){
 }
 
 function pintar(esDemo){
+  // La cinta "DATOS SIMULADOS" solo aparece cuando se usa el respaldo demo.
+  var cinta=document.getElementById("demo-cinta");
+  if(cinta) cinta.hidden = !esDemo;
   // Rótulo honesto en la sección si estamos en respaldo DEMO
   var sub=document.querySelector(".seccion__s");
   if(sub){
@@ -407,14 +410,14 @@ function pintar(esDemo){
       : 'Datos recientes de <b>WAQI</b> (índice de origen, escala US-EPA — no es el ICA del proyecto). © OpenStreetMap · OAB/WAQI.';
   }
   var cont=document.getElementById("listado"); cont.innerHTML="";
+  var NEUTRO="#6b7280";  // color neutro: el índice del bounds es WAQI, no el ICA del proyecto
   DATOS.forEach(function(e){
-    var nivelColorTxt = (+e.aqi<=50?"bajo":(+e.aqi<=100?"medio":"alto"));
     var b=document.createElement("button");
     b.className="est"; b.setAttribute("aria-pressed","false"); b.dataset.uid=e.uid;
-    b.innerHTML='<span class="est__p" style="background:'+colorAQI(e.aqi)+'"></span>'+
+    b.innerHTML='<span class="est__p" style="background:'+NEUTRO+'"></span>'+
       '<span><span class="est__n">'+esc(e.nombre)+'</span>'+
-      '<span class="est__m">AQI WAQI '+(nivelColorTxt)+' · medido '+esc(e.hora)+(e.demo?' · DEMO':'')+'</span></span>'+
-      '<span class="est__i" style="color:'+colorAQI(e.aqi)+'">'+esc(e.aqi==null?"—":e.aqi)+'</span>';
+      '<span class="est__m">índice WAQI (escala US-EPA) · medido '+esc(e.hora)+(e.demo?' · DATOS SIMULADOS':'')+'</span></span>'+
+      '<span class="est__i" style="color:'+NEUTRO+'">'+esc(e.aqi==null?"—":e.aqi)+'</span>';
     b.onclick=function(){ seleccionar(e.uid); };
     cont.appendChild(b);
   });
@@ -435,8 +438,9 @@ function dibujarMapa(esDemo){
     L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:18,attribution:'© OpenStreetMap contributors'}).addTo(mapa);
     DATOS.forEach(function(e){
       if(e.lat==null||e.lon==null) return;
-      var m=L.circleMarker([e.lat,e.lon],{radius:10,color:"#fff",weight:2,fillColor:colorAQI(e.aqi),fillOpacity:1}).addTo(mapa);
-      m.bindPopup('<div class="pop__n">'+esc(e.nombre)+'</div><div class="pop__d">AQI WAQI '+esc(e.aqi)+' <em>(escala US-EPA, no es el ICA)</em><br>medido '+esc(e.hora)+(e.demo?'<br><em>DEMO — dato simulado</em>':'')+'</div>');
+      // Color neutro: el valor del bounds es índice WAQI (escala US-EPA), no el ICA del proyecto.
+      var m=L.circleMarker([e.lat,e.lon],{radius:10,color:"#fff",weight:2,fillColor:"#6b7280",fillOpacity:1}).addTo(mapa);
+      m.bindPopup('<div class="pop__n">'+esc(e.nombre)+'</div><div class="pop__d">índice WAQI '+esc(e.aqi)+' <em>(escala US-EPA, no es el ICA del proyecto)</em><br>medido '+esc(e.hora)+(e.demo?'<br><em>DATOS SIMULADOS</em>':'')+'</div>');
       m.on("click",function(){ seleccionar(e.uid); });
       marcadores[e.uid]=m;
     });
