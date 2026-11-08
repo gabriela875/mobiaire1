@@ -124,6 +124,14 @@ class Handler(BaseHTTPRequestHandler):
             uid = camino[len("/api/waqi/estacion/"):].strip("/")
             return self._waqi_estacion(uid)
 
+        # --- Zonas (Sprint 2): asociación UPZ -> estación más cercana -----
+        if camino == "/api/zonas/asociacion":
+            return self._zonas_asociacion()
+
+        if camino.startswith("/api/zona/"):
+            zid = camino[len("/api/zona/"):].strip("/")
+            return self._zona_semaforo(zid)
+
         return self._error("Ruta no encontrada", 404)
 
     # bloquear cualquier método que no sea GET (solo lectura)
@@ -203,6 +211,57 @@ class Handler(BaseHTTPRequestHandler):
             return self._json(waqi.ciudad_bolivar())
         except waqi.ErrorWAQI as e:
             return self._error(str(e), 502)
+
+    # --- Zonas (Sprint 2) --------------------------------------------------
+    def _zonas_asociacion(self):
+        """Tabla UPZ -> estación WAQI más cercana (haversine). Sin token -> pendiente."""
+        from zonas import asociacion
+        from web import waqi
+        estaciones = []
+        if waqi.hay_token():
+            try:
+                estaciones = [e for e in waqi.estaciones_bogota().get("estaciones", [])
+                              if e.get("reciente")]
+            except waqi.ErrorWAQI:
+                estaciones = []
+        return self._json(asociacion.asociar(estaciones))
+
+    def _zona_semaforo(self, zid):
+        """Semáforo de una zona: su estación asociada + ICA estimado (derivado WAQI)."""
+        from zonas import asociacion
+        from web import waqi
+        if not waqi.hay_token():
+            return self._error("WAQI no configurado: falta WAQI_TOKEN en .env del backend.", 503)
+        try:
+            estaciones = [e for e in waqi.estaciones_bogota().get("estaciones", [])
+                          if e.get("reciente")]
+        except waqi.ErrorWAQI as e:
+            return self._error(str(e), 502)
+        tabla = asociacion.asociar(estaciones)
+        zona = next((z for z in tabla["zonas"] if z["id"] == zid), None)
+        if zona is None:
+            return self._error(f"Zona '{zid}' no encontrada", 404)
+        if zona["estado"] != "ok" or not zona.get("estacion"):
+            # Zona pendiente (sin coords oficiales) o sin estación: estado honesto
+            return self._json({"zona": zona, "estado": zona["estado"],
+                               "semaforo": None, "consultado_en": tabla.get("consultado_en")})
+        uid = zona["estacion"]["uid"]
+        try:
+            det = waqi.estacion(uid)
+        except waqi.ErrorWAQI as e:
+            return self._error(str(e), 502)
+        est = det.get("estacion", {})
+        return self._json({
+            "zona": {"id": zona["id"], "nombre": zona["nombre"], "distancia_km": zona["distancia_km"]},
+            "estado": "ok" if est.get("reciente") else "sin_dato_reciente",
+            "estacion": {"uid": est.get("uid"), "nombre": est.get("nombre"),
+                         "medido_bogota": est.get("medido_bogota"), "reciente": est.get("reciente")},
+            # ICA estimado del proyecto (Res. 2254) derivado de WAQI; None si no reciente
+            "semaforo": est.get("ica_estimado"),
+            "indice_waqi": est.get("aqi_waqi"),
+            "atribucion": det.get("atribucion", []),
+            "consultado_en": det.get("consultado_en"),
+        })
 
     def _salud(self):
         return self._json({

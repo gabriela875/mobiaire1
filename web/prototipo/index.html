@@ -86,7 +86,7 @@ h1,h2,h3{font-family:var(--titulo);font-weight:800;letter-spacing:-.01em;color:v
 .pmfila{display:flex;gap:30px;margin-top:18px;}
 .pm b{font-family:var(--dato);display:block;font-size:1.5rem;color:var(--verde-hondo);font-weight:700;}
 .pm span{font-family:var(--cuerpo);font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:var(--tinta-suave);font-weight:700;}
-.pm small{font-family:var(--cuerpo);font-size:.74rem;color:var(--tinta-suave);}
+.pm > small{font-family:var(--cuerpo);font-size:.74rem;color:var(--tinta-suave);}
 .aire__meta{font-family:var(--cuerpo);margin-top:18px;font-size:.8rem;color:var(--tinta-suave);display:flex;gap:22px;flex-wrap:wrap;}
 .aire__meta b{color:var(--tinta);font-weight:600;}
 
@@ -103,6 +103,25 @@ h1,h2,h3{font-family:var(--titulo);font-weight:800;letter-spacing:-.01em;color:v
 .cbwaqi__meta{font-family:var(--cuerpo);font-size:.78rem;color:var(--tinta-suave);}
 .cbwaqi__meta b{color:var(--tinta);font-weight:600;}
 .cbwaqi--aviso{font-family:var(--cuerpo);font-size:.85rem;color:#8a5a00;background:#fbeed9;border:1px solid #ecc488;padding:10px 14px;}
+
+/* Selector de zona (Sprint 2) */
+.zona-sec{padding:46px 0 10px;}
+.zona-controles{display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;margin-top:12px;}
+.zona-label{display:block;font-family:var(--cuerpo);font-size:.78rem;font-weight:700;color:var(--tinta-suave);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;}
+.zona-select{font-family:var(--cuerpo);font-size:1rem;padding:9px 12px;border:1px solid var(--linea-fuerte);background:#fff;color:var(--tinta);min-width:220px;}
+.zona-semaforo{margin-top:18px;display:flex;gap:26px;align-items:center;flex-wrap:wrap;border-top:1px solid var(--linea);padding-top:18px;}
+.zona-disco{width:118px;height:118px;border-radius:50%;display:grid;place-items:center;border:3px solid;flex:none;}
+.zona-disco .n{font-family:var(--dato);font-size:2.6rem;font-weight:700;line-height:1;}
+.zona-disco .e{font-family:var(--cuerpo);font-size:.62rem;letter-spacing:.06em;color:var(--tinta-suave);text-transform:uppercase;}
+.zona-disco.verde{border-color:var(--n-verde);color:var(--n-verde);}
+.zona-disco.naranja{border-color:var(--n-naranja);color:var(--n-naranja);}
+.zona-disco.rojo{border-color:var(--n-rojo);color:var(--n-rojo);}
+.zona-disco.gris{border-color:var(--n-gris);color:var(--n-gris);}
+.zona-info{font-family:var(--cuerpo);font-size:.9rem;}
+.zona-info .nivel{font-weight:800;}
+.zona-info .meta{font-size:.8rem;color:var(--tinta-suave);margin-top:4px;}
+.zona-gris{color:var(--n-gris);font-weight:700;}
+.zona-pend{font-family:var(--cuerpo);font-size:.88rem;color:#8a5a00;background:#fbeed9;border:1px solid #ecc488;padding:12px 14px;}
 
 /* ---------- Pasos 01–04 (números marca de agua, sin cajas) ---------- */
 .pasos{display:grid;grid-template-columns:repeat(4,1fr);gap:28px;margin:66px 0 20px;}
@@ -235,6 +254,19 @@ h1,h2,h3{font-family:var(--titulo);font-weight:800;letter-spacing:-.01em;color:v
     </div>
     <div class="cbwaqi__cuerpo" id="cb-waqi-cuerpo"><!-- se rellena por JS --></div>
   </div>
+</section>
+
+<!-- ===================== SELECTOR DE ZONA (Sprint 2) ===================== -->
+<section class="envoltura zona-sec">
+  <h2 class="seccion__t">Tu zona en Ciudad Bolívar</h2>
+  <p class="seccion__s">Elige una UPZ para ver el semáforo de su estación más cercana. Sin registro; la zona no se guarda.</p>
+  <div class="zona-controles">
+    <label class="zona-label" for="sel-zona">Zona (UPZ)</label>
+    <select id="sel-zona" class="zona-select"><option value="">— Elige una zona —</option></select>
+    <button id="btn-mi-ubic" class="btn-linea" type="button">Usar mi ubicación</button>
+  </div>
+  <div id="zona-semaforo" class="zona-semaforo" hidden></div>
+  <p id="zona-ubic-aviso" class="ubic-aviso"></p>
 </section>
 
 <!-- ===================== PASOS 01–04 ===================== -->
@@ -429,7 +461,7 @@ function cargarHistoricoCB(){
     var pms=document.querySelectorAll(".pm b");
     if(pms[0]) pms[0].innerHTML=(e.pm25_24h==null?"N/D":e.pm25_24h)+' <small>µg/m³</small>';
     if(pms[1]) pms[1].innerHTML=(e.pm10_24h==null?"N/D":e.pm10_24h)+' <small>µg/m³</small>';
-    var smalls=document.querySelectorAll(".pm small");
+    var smalls=document.querySelectorAll(".pm > small");
     if(smalls[0]) smalls[0].textContent="prom. 24 h"+(e.ica_pm25!=null?" · ICA "+e.ica_pm25:"");
     if(smalls[1]) smalls[1].textContent="prom. 24 h"+(e.ica_pm10!=null?" · ICA "+e.ica_pm10:"");
     var meta=document.querySelector(".aire__meta");
@@ -491,9 +523,102 @@ function haversine(a,b,c,d){var R=6371,r=Math.PI/180,dla=(c-a)*r,dlo=(d-b)*r,
 
 document.getElementById("btn-ubic").onclick=pedirUbicacion;
 document.getElementById("btn-ubic2").onclick=pedirUbicacion;
+/* ===================== ZONAS (Sprint 2) ===================== */
+var ZONAS_ASOC=null;  // tabla de asociación (si hay backend)
+function nivelClase(n){return n==="verde"||n==="naranja"||n==="rojo"?n:"gris";}
+
+function cargarZonas(){
+  var sel=document.getElementById("sel-zona");
+  // Llenar el selector desde la asociación (o desde zonas.json si no hay backend)
+  fetch("/api/zonas/asociacion").then(function(r){return r.ok?r.json():null;}).then(function(d){
+    ZONAS_ASOC=d;
+    var zonas=(d&&d.zonas)||[];
+    if(!zonas.length){
+      // respaldo: leer nombres de /api/zonas (estático)
+      return fetch("/api/zonas").then(function(r){return r.json();}).then(function(z){
+        (z.zonas||[]).forEach(function(zo){ sel.add(new Option(zo.nombre, zo.id)); });
+      });
+    }
+    zonas.forEach(function(zo){ sel.add(new Option(zo.nombre, zo.id)); });
+  }).catch(function(){
+    fetch("/api/zonas").then(function(r){return r.json();}).then(function(z){
+      (z.zonas||[]).forEach(function(zo){ sel.add(new Option(zo.nombre, zo.id)); });
+    }).catch(function(){});
+  }).finally(function(){
+    // Zona desde el hash de la URL (vive solo en la sesión; sin localStorage)
+    var h=(location.hash||"").replace(/^#zona=/,"");
+    if(h){ sel.value=h; verZona(h); }
+  });
+  sel.onchange=function(){
+    var id=sel.value;
+    if(id){ location.hash="zona="+id; verZona(id); }
+    else { location.hash=""; document.getElementById("zona-semaforo").hidden=true; }
+  };
+}
+
+function verZona(id){
+  var cont=document.getElementById("zona-semaforo");
+  cont.hidden=false; cont.innerHTML='<p class="zona-info">Consultando…</p>';
+  fetch("/api/zona/"+encodeURIComponent(id)).then(function(r){
+    if(r.status===503) throw {pend:true, msg:"Falta WAQI_TOKEN en el backend."};
+    if(!r.ok) throw {msg:"No disponible ("+r.status+")."};
+    return r.json();
+  }).then(function(d){
+    if(d.estado==="pendiente"){
+      cont.innerHTML='<div class="zona-pend">⏳ <b>'+esc(d.zona.nombre)+'</b>: asociación pendiente. '+
+        esc(d.zona.motivo||"Sin coordenadas oficiales de la UPZ.")+' Usa el mapa de estaciones mientras tanto.</div>';
+      return;
+    }
+    if(d.estado==="sin_dato_reciente" || !d.semaforo){
+      cont.innerHTML='<div class="zona-disco gris"><div style="text-align:center"><div class="n">—</div><div class="e">sin dato</div></div></div>'+
+        '<div class="zona-info"><span class="zona-gris">Sin dato reciente</span>'+
+        '<div class="meta">Estación: '+esc((d.estacion&&d.estacion.nombre)||"—")+' · no reporta dato de las últimas horas.</div></div>';
+      return;
+    }
+    var s=d.semaforo, cl=nivelClase(s.nivel);
+    cont.innerHTML=
+      '<div class="zona-disco '+cl+'"><div style="text-align:center"><div class="n">'+esc(s.ica)+'</div><div class="e">ICA estimado</div></div></div>'+
+      '<div class="zona-info"><span class="nivel" style="text-transform:capitalize">'+esc(s.nivel)+'</span> · ICA estimado (derivado de WAQI)'+
+      '<div class="meta">Estación usada: <b>'+esc(d.estacion.nombre)+'</b>'+(d.zona.distancia_km!=null?" ("+d.zona.distancia_km+" km)":"")+'<br>'+
+      'Última sincronización: <b>'+esc(d.estacion.medido_bogota||"—")+'</b> (hora de Bogotá)<br>'+
+      '<span style="color:#c06a4e">Índice WAQI de origen: '+esc(d.indice_waqi)+' (escala US-EPA, no es el ICA).</span><br>'+
+      'Fuente: WAQI · '+esc((d.atribucion||[]).join(" · "))+'</div></div>';
+  }).catch(function(err){
+    cont.innerHTML='<div class="zona-pend">'+(err&&err.pend?"⏳ ":"")+esc((err&&err.msg)||"No disponible ahora.")+' La zona no se guarda.</div>';
+  });
+}
+
+/* "Usar mi ubicación": todo en el navegador, sin enviar ni guardar coordenadas */
+function usarMiUbicacion(){
+  var aviso=document.getElementById("zona-ubic-aviso");
+  if(!navigator.geolocation){ aviso.textContent="Tu navegador no permite geolocalización; elige la zona manualmente."; return; }
+  aviso.textContent="Pidiendo ubicación… (si la niegas, elige la zona manualmente).";
+  navigator.geolocation.getCurrentPosition(function(pos){
+    // Elegir la UPZ cuya estación asociada quede más cerca de ti (cálculo local).
+    var la=pos.coords.latitude, lo=pos.coords.longitude;
+    if(!ZONAS_ASOC||!ZONAS_ASOC.zonas){ aviso.textContent="Aún no hay asociación de zonas; elige manualmente."; return; }
+    var mejor=null,dmin=1e9;
+    ZONAS_ASOC.zonas.forEach(function(z){
+      if(z.estado!=="ok"||!z.estacion) return;
+      var d=haversine(la,lo,z.estacion.lat,z.estacion.lon);
+      if(d<dmin){dmin=d;mejor=z;}
+    });
+    if(mejor){
+      document.getElementById("sel-zona").value=mejor.id;
+      location.hash="zona="+mejor.id; verZona(mejor.id);
+      aviso.textContent="Zona sugerida por cercanía: "+mejor.nombre+". Tu ubicación no se envió ni se guardó.";
+    } else {
+      aviso.textContent="No hay zonas asociadas todavía (coordenadas oficiales pendientes). Elige manualmente.";
+    }
+  }, function(){ aviso.textContent="Permiso denegado. Elige la zona manualmente (la app sigue funcionando)."; });
+}
+
+document.getElementById("btn-mi-ubic").onclick=usarMiUbicacion;
+
 cargarEstaciones();
 cargarHistoricoCB();
 cargarWaqiCB();
+cargarZonas();
 </script>
 </body>
 </html>

@@ -148,14 +148,38 @@ def _estacion_de_feed(d):
         "aqi_co": _num((iaqi.get("co") or {}).get("v")),
         "unidad_valores": "sub-índice AQI (US-EPA), NO µg/m³",
         "contaminantes": sorted(iaqi.keys()),
-        # Hora de medición en zona local de la estación (viene en -05:00 en el feed)
+        # Hora de medición normalizada a hora de Bogotá (-05:00)
         "medido_en": (d.get("time", {}) or {}).get("s"),
         "medido_iso": iso,
+        "medido_bogota": a_hora_bogota(iso),
         "reciente": _reciente(iso),
         "fuente": "WAQI",
         "atribucion": attrs,
         "escala_indice": "US-EPA (WAQI) — no es el ICA del proyecto",
     }
+
+
+from datetime import timedelta
+
+TZ_BOGOTA = timezone(timedelta(hours=-5))
+
+
+def a_hora_bogota(iso):
+    """Convierte una hora ISO (con cualquier offset, p. ej. +09:00) a hora de Bogotá.
+
+    WAQI a veces etiqueta el mismo instante con husos distintos (el feed en -05:00
+    y map/bounds en +09:00). El instante es el mismo; aquí se normaliza a -05:00.
+    Devuelve texto ISO en -05:00, o el original si no se puede parsear.
+    """
+    if not iso:
+        return None
+    try:
+        t = datetime.fromisoformat(iso)
+    except ValueError:
+        return iso
+    if t.tzinfo is None:
+        t = t.replace(tzinfo=TZ_BOGOTA)   # sin offset: WAQI local ya es Bogotá
+    return t.astimezone(TZ_BOGOTA).isoformat(timespec="minutes")
 
 
 def _reciente(iso, max_horas=6):
@@ -201,6 +225,7 @@ def estaciones_bogota(forzar=False):
             "lon": _num(f.get("lon")),
             "aqi_waqi": f.get("aqi"),
             "medido_iso": iso,
+            "medido_bogota": a_hora_bogota(iso),
             "reciente": _reciente(iso),
             "fuente": "WAQI",
             "escala_indice": "US-EPA (WAQI) — no es el ICA del proyecto",
@@ -249,6 +274,13 @@ def estacion(uid, forzar=False):
             return c
     data = _pedir(_ruta_feed(uid), {})
     est = _estacion_de_feed(data)
+    # ICA estimado del proyecto (Res. 2254) derivado de los sub-índices WAQI.
+    # Solo si el dato es reciente; si no, no se calcula semáforo vigente.
+    est["ica_estimado"] = None
+    if est.get("reciente"):
+        from motor_ica.conversion_waqi import ica_desde_waqi
+        est["ica_estimado"] = ica_desde_waqi(aqi_pm25=est.get("aqi_pm25"),
+                                             aqi_pm10=est.get("aqi_pm10"))
     resultado = {
         "fuente": "WAQI / AQICN",
         "atribucion": est.get("atribucion", []),
