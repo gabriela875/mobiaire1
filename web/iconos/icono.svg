@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="MobiAire Materno">
+  <!-- Icono maskable: el fondo cubre todo el lienzo (zona segura ~80% central). -->
+  <rect width="512" height="512" fill="#2f6b4f"/>
+  <circle cx="256" cy="256" r="150" fill="#e7f1ea"/>
+  <clipPath id="c"><circle cx="256" cy="256" r="150"/></clipPath>
+  <g clip-path="url(#c)">
+    <!-- follaje -->
+    <path d="M120 400 Q150 300 250 330 Q180 370 150 430 Z" fill="#bcdcc8"/>
+    <path d="M400 190 Q320 180 300 260 Q370 225 410 245 Z" fill="#a8d0b7"/>
+    <!-- gestante -->
+    <circle cx="300" cy="175" r="34" fill="#2f6b4f"/>
+    <path d="M286 205 q48 14 56 92 q8 72 -18 150 l-104 0 q-16 -56 6 -96 q-56 -12 -56 -72 q0 -48 48 -64 q36 -12 64 6 Z" fill="#3d8362"/>
+    <!-- vientre -->
+    <circle cx="208" cy="320" r="52" fill="#e8927c"/>
+  </g>
+</svg>

@@ -103,6 +103,19 @@ body {
 .interruptor input:focus-visible + .interruptor__pista { outline: 3px solid var(--coral); outline-offset: 2px; }
 .interruptor__etq { font-weight: 600; }
 
+/* Agrupa interruptor demo + botón instalar */
+.modo { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+
+/* Botón discreto de instalación PWA (oculto hasta que el navegador lo permita) */
+.btn-instalar {
+  display: inline-flex; align-items: center; gap: 6px; cursor: pointer;
+  background: var(--verde-claro); color: var(--verde-hondo);
+  border: 1px solid var(--salvia, #8fae9b); border-radius: 999px;
+  font-size: .82rem; font-weight: 600; padding: 7px 14px; font-family: inherit;
+}
+.btn-instalar:hover { background: #dcebe0; }
+.btn-instalar:focus-visible { outline: 3px solid var(--coral); outline-offset: 2px; }
+
 /* Bandera demo */
 .banda-demo {
   margin-top: 16px; max-width: var(--ancho); margin-left: auto; margin-right: auto;

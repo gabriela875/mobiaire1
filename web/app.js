@@ -246,5 +246,38 @@ function init() {
   };
   $("#btn-recargar").onclick = () => cambiarVista(estado.vista);
   cambiarVista("estacion");
+  iniciarPWA();
 }
 document.addEventListener("DOMContentLoaded", init);
+
+/* ---------- PWA (Sprint 3): service worker + botón de instalación ---------- */
+function iniciarPWA() {
+  // Registrar el service worker (requiere HTTPS o localhost; si no, se ignora).
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("/service-worker.js").catch(() => {
+        /* sin SW (p. ej. sin HTTPS): la app sigue funcionando como web normal */
+      });
+    });
+  }
+
+  // Botón discreto "Instalar": solo aparece si el navegador ofrece el prompt.
+  let promptInstalar = null;
+  const btn = document.getElementById("btn-instalar");
+  window.addEventListener("beforeinstallprompt", (e) => {
+    e.preventDefault();            // controlamos cuándo mostrarlo
+    promptInstalar = e;
+    if (btn) btn.hidden = false;
+  });
+  if (btn) {
+    btn.onclick = async () => {
+      if (!promptInstalar) return;
+      promptInstalar.prompt();
+      try { await promptInstalar.userChoice; } catch (_) {}
+      promptInstalar = null;
+      btn.hidden = true;           // un solo intento; el navegador decide el resto
+    };
+  }
+  // Si ya está instalada, no mostrar el botón.
+  window.addEventListener("appinstalled", () => { if (btn) btn.hidden = true; });
+}
