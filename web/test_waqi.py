@@ -24,6 +24,15 @@ def test_a_hora_bogota_convierte_offset():
     assert waqi.a_hora_bogota("2026-11-09T05:00:00+09:00") == "2026-11-08T15:00-05:00"
 
 
+def test_texto_hora_bogota_legible():
+    t = waqi.texto_hora_bogota("2026-11-08T16:00:00-05:00")
+    assert "8 nov 2026" in t and "4:00 p. m." in t and "Bogotá" in t
+    # medianoche y mediodía
+    assert "12:00 a. m." in waqi.texto_hora_bogota("2026-11-08T00:00:00-05:00")
+    assert "12:00 p. m." in waqi.texto_hora_bogota("2026-11-08T12:00:00-05:00")
+    assert waqi.texto_hora_bogota(None) is None
+
+
 def test_estacion_de_feed_unescape_y_unidades():
     d = {"idx": -522148, "aqi": 52, "dominentpol": "pm25",
          "city": {"name": "Ciudad Bol&iacute;var", "geo": ["4.57", "-74.16"]},

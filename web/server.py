@@ -115,7 +115,8 @@ class Handler(BaseHTTPRequestHandler):
 
         # --- WAQI (datos recientes; token solo en el backend) ------------
         if camino == "/api/waqi/estaciones":
-            return self._waqi_estaciones()
+            con_semaforo = params.get("semaforo", ["0"])[0] in ("1", "true", "si", "sí")
+            return self._waqi_estaciones(con_semaforo)
 
         if camino == "/api/waqi/ciudad-bolivar":
             return self._waqi_ciudad_bolivar()
@@ -182,11 +183,13 @@ class Handler(BaseHTTPRequestHandler):
         return self._json(datos)
 
     # --- WAQI (proxy de solo lectura; el token NUNCA sale del backend) ----
-    def _waqi_estaciones(self):
+    def _waqi_estaciones(self, con_semaforo=False):
         from web import waqi
         if not waqi.hay_token():
             return self._error("WAQI no configurado: falta WAQI_TOKEN en .env del backend.", 503)
         try:
+            if con_semaforo:
+                return self._json(waqi.estaciones_con_semaforo())
             return self._json(waqi.estaciones_bogota())
         except waqi.ErrorWAQI as e:
             return self._error(str(e), 502)
@@ -275,7 +278,9 @@ class Handler(BaseHTTPRequestHandler):
             "zona": {"id": zona["id"], "nombre": zona["nombre"], "distancia_km": zona["distancia_km"]},
             "estado": "ok" if est.get("reciente") else "sin_dato_reciente",
             "estacion": {"uid": est.get("uid"), "nombre": est.get("nombre"),
-                         "medido_bogota": est.get("medido_bogota"), "reciente": est.get("reciente")},
+                         "medido_bogota": est.get("medido_bogota"),
+                         "medido_texto": est.get("medido_texto"),
+                         "reciente": est.get("reciente")},
             # ICA estimado del proyecto (Res. 2254) derivado de WAQI; None si no reciente
             "semaforo": est.get("ica_estimado"),
             "indice_waqi": est.get("aqi_waqi"),

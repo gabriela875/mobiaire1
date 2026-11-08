@@ -155,6 +155,7 @@ def _estacion_de_feed(d):
         "medido_en": (d.get("time", {}) or {}).get("s"),
         "medido_iso": iso,
         "medido_bogota": a_hora_bogota(iso),
+        "medido_texto": texto_hora_bogota(iso),
         "reciente": _reciente(iso),
         "fuente": "WAQI",
         "atribucion": attrs,
@@ -183,6 +184,30 @@ def a_hora_bogota(iso):
     if t.tzinfo is None:
         t = t.replace(tzinfo=TZ_BOGOTA)   # sin offset: WAQI local ya es Bogotá
     return t.astimezone(TZ_BOGOTA).isoformat(timespec="minutes")
+
+
+_MESES = ["", "ene", "feb", "mar", "abr", "may", "jun",
+          "jul", "ago", "sep", "oct", "nov", "dic"]
+
+
+def texto_hora_bogota(iso):
+    """Hora de Bogotá legible para la usuaria: '8 nov 2026, 4:00 p. m.'.
+
+    Devuelve None si no hay fecha, o el texto original si no se puede parsear.
+    """
+    if not iso:
+        return None
+    try:
+        t = datetime.fromisoformat(iso)
+    except ValueError:
+        return iso
+    if t.tzinfo is None:
+        t = t.replace(tzinfo=TZ_BOGOTA)
+    t = t.astimezone(TZ_BOGOTA)
+    h24 = t.hour
+    ampm = "a. m." if h24 < 12 else "p. m."
+    h12 = h24 % 12 or 12
+    return f"{t.day} {_MESES[t.month]} {t.year}, {h12}:{t.minute:02d} {ampm} (hora de Bogotá)"
 
 
 def _reciente(iso, max_horas=6):
@@ -229,6 +254,7 @@ def estaciones_bogota(forzar=False):
             "aqi_waqi": f.get("aqi"),
             "medido_iso": iso,
             "medido_bogota": a_hora_bogota(iso),
+            "medido_texto": texto_hora_bogota(iso),
             "reciente": _reciente(iso),
             "fuente": "WAQI",
             "escala_indice": "US-EPA (WAQI) — no es el ICA del proyecto",
@@ -246,6 +272,38 @@ def estaciones_bogota(forzar=False):
     _guardar_cache(clave, resultado)
     resultado["desde_cache"] = False
     return resultado
+
+
+def estaciones_con_semaforo(forzar=False):
+    """Estaciones de Bogotá + ICA ESTIMADO del proyecto por estación (opción A).
+
+    Para cada estación reciente consulta su feed (cacheado ~10 min) y calcula el
+    ICA estimado (derivado de WAQI, Res. 2254) con su nivel verde/naranja/rojo.
+    Así el mapa puede pintar el SEMÁFORO DEL PROYECTO, no el índice WAQI.
+    Si una estación falla, se deja con semaforo=None (color neutro), sin tumbar
+    el resto. Reutiliza la caché por estación.
+    """
+    base = estaciones_bogota(forzar=forzar)
+    salida = []
+    for e in base.get("estaciones", []):
+        item = dict(e)
+        item["semaforo"] = None   # ICA estimado del proyecto; None = usar color neutro
+        if e.get("reciente") and e.get("uid") is not None:
+            try:
+                det = estacion(e["uid"], forzar=forzar).get("estacion", {})
+                item["semaforo"] = det.get("ica_estimado")   # {ica, nivel, ...} o None
+                item["medido_texto"] = det.get("medido_texto") or item.get("medido_texto")
+            except ErrorWAQI:
+                pass   # esa estación queda en color neutro
+        salida.append(item)
+    return {
+        "fuente": base.get("fuente"),
+        "atribucion": base.get("atribucion"),
+        "nota_escala": ("Color = semáforo del proyecto (ICA estimado, Res. 2254, "
+                        "derivado de WAQI). El número grande es el índice WAQI de origen."),
+        "consultado_en": base.get("consultado_en"),
+        "estaciones": salida,
+    }
 
 
 def _ruta_feed(uid):
