@@ -9,12 +9,11 @@
 
 "use strict";
 
-const VERSION = "mobiaire-v1";
+const VERSION = "mobiaire-v2";
+// La cáscara es el diseño nuevo (/ sirve prototipo/index.html, con CSS/JS en línea).
+// El CSS/JS de Leaflet viene de CDN y se cachea en tiempo de ejecución (runtime).
 const CASCARA = [
   "/",
-  "/index.html",
-  "/estilos.css",
-  "/app.js",
   "/manifest.webmanifest",
   "/iconos/icono.svg",
   "/iconos/icono-192.png",

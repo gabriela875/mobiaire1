@@ -41,17 +41,20 @@ ARCHIVO_ZONAS = AQUI / "zonas.json"
 
 # Solo estos archivos estáticos se pueden servir (lista blanca por seguridad).
 ESTATICOS = {
-    "/": ("index.html", "text/html; charset=utf-8"),
-    "/index.html": ("index.html", "text/html; charset=utf-8"),
-    "/estilos.css": ("estilos.css", "text/css; charset=utf-8"),
-    "/app.js": ("app.js", "application/javascript; charset=utf-8"),
+    # La RAÍZ sirve el diseño nuevo (rediseño funcional + PWA): prototipo/index.html.
+    "/": ("prototipo/index.html", "text/html; charset=utf-8"),
+    "/index.html": ("prototipo/index.html", "text/html; charset=utf-8"),
     # PWA: manifest, service worker e iconos de instalación (Sprint 3).
     "/manifest.webmanifest": ("manifest.webmanifest", "application/manifest+json; charset=utf-8"),
     "/service-worker.js": ("service-worker.js", "application/javascript; charset=utf-8"),
     "/iconos/icono.svg": ("iconos/icono.svg", "image/svg+xml; charset=utf-8"),
     "/iconos/icono-192.png": ("iconos/icono-192.png", "image/png"),
     "/iconos/icono-512.png": ("iconos/icono-512.png", "image/png"),
-    # Prototipo visual estático (DEMO). Autocontenido; solo para revisión de diseño.
+    # Interfaz anterior (Sprint 1/2), accesible por si se necesita comparar.
+    "/clasica": ("index.html", "text/html; charset=utf-8"),
+    "/estilos.css": ("estilos.css", "text/css; charset=utf-8"),
+    "/app.js": ("app.js", "application/javascript; charset=utf-8"),
+    # Alias del diseño (compatibilidad con enlaces previos a /prototipo).
     "/prototipo": ("prototipo/index.html", "text/html; charset=utf-8"),
     "/prototipo/": ("prototipo/index.html", "text/html; charset=utf-8"),
     "/prototipo/index.html": ("prototipo/index.html", "text/html; charset=utf-8"),

@@ -4,7 +4,16 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#3f5e4d">
-<title>MobiAire Materno — Prototipo visual (DEMO)</title>
+<meta name="description" content="MobiAire Materno: calidad del aire para gestantes de Ciudad Bolívar, Bogotá.">
+<title>MobiAire Materno — Calidad del aire</title>
+<!-- PWA (Sprint 3): instalable y con cáscara offline -->
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="icon" type="image/svg+xml" href="/iconos/icono.svg">
+<link rel="apple-touch-icon" href="/iconos/icono-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="MobiAire">
+<meta name="mobile-web-app-capable" content="yes">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
       integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
 <style>
@@ -215,6 +224,7 @@ h1,h2,h3{font-family:var(--titulo);font-weight:800;letter-spacing:-.01em;color:v
     <button class="nav-link" type="button">Estaciones</button>
     <button class="nav-link" type="button">Mapa</button>
     <button class="btn-linea" id="btn-ubic" type="button">Cerca de mí</button>
+    <button class="btn-linea" id="btn-instalar" type="button" hidden>⤓ Instalar</button>
   </nav>
 </div></div></header>
 
@@ -633,6 +643,26 @@ cargarEstaciones();
 cargarHistoricoCB();
 cargarWaqiCB();
 cargarZonas();
+
+/* ===================== PWA: service worker + botón instalar ===================== */
+if("serviceWorker" in navigator){
+  window.addEventListener("load",function(){
+    navigator.serviceWorker.register("/service-worker.js").catch(function(){});
+  });
+}
+(function(){
+  var prompt=null, btn=document.getElementById("btn-instalar");
+  window.addEventListener("beforeinstallprompt",function(e){
+    e.preventDefault(); prompt=e; if(btn) btn.hidden=false;
+  });
+  if(btn) btn.onclick=async function(){
+    if(!prompt) return;
+    prompt.prompt();
+    try{ await prompt.userChoice; }catch(_){}
+    prompt=null; btn.hidden=true;
+  };
+  window.addEventListener("appinstalled",function(){ if(btn) btn.hidden=true; });
+})();
 </script>
 </body>
 </html>

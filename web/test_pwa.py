@@ -55,6 +55,14 @@ def test_sirve_recursos_pwa():
             c, cuerpo, tipo = _get(ruta)
             assert c == 200, ruta
             assert cuerpo[:4] == firma or cuerpo.lstrip()[:4] == firma, ruta
+
+        # La raíz sirve el DISEÑO NUEVO (rediseño) y enlaza el manifest.
+        c, cuerpo, tipo = _get("/")
+        html = cuerpo.decode("utf-8")
+        assert c == 200 and "text/html" in tipo
+        assert 'rel="manifest"' in html            # es instalable
+        assert "api/waqi/estaciones" in html        # trae el rediseño funcional (mapa/estaciones)
+        assert "btn-instalar" in html               # botón de instalación
     finally:
         httpd.shutdown()
 
