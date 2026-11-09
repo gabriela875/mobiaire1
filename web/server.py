@@ -50,6 +50,12 @@ ESTATICOS = {
     "/iconos/icono.svg": ("iconos/icono.svg", "image/svg+xml; charset=utf-8"),
     "/iconos/icono-192.png": ("iconos/icono-192.png", "image/png"),
     "/iconos/icono-512.png": ("iconos/icono-512.png", "image/png"),
+    # Imagen e ilustraciones del rediseño móvil.
+    "/img/embarazada.png": ("img/embarazada.png", "image/png"),
+    # Textos editables por el Product Owner (recomendaciones y guía). Contenido, no API.
+    "/recomendaciones.json": ("recomendaciones.json", "application/json; charset=utf-8"),
+    # JavaScript del rediseño móvil (el que sirve la raíz).
+    "/app-movil.js": ("app-movil.js", "application/javascript; charset=utf-8"),
     # Interfaz anterior (Sprint 1/2), accesible por si se necesita comparar.
     "/clasica": ("index.html", "text/html; charset=utf-8"),
     "/estilos.css": ("estilos.css", "text/css; charset=utf-8"),

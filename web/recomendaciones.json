@@ -1,0 +1,27 @@
+{
+  "_nota": "Textos revisables por el Product Owner. Son orientativos, NO indicaciones médicas. Un solo archivo para editar sin tocar código.",
+  "niveles": {
+    "verde": {
+      "titulo": "Aire aceptable",
+      "recomendacion": "La calidad del aire es favorable. Es un buen momento para caminar o ventilar tu casa abriendo ventanas un rato."
+    },
+    "naranja": {
+      "titulo": "Precaución",
+      "recomendacion": "Reduce el tiempo al aire libre y los esfuerzos intensos. Si sales, hazlo con calma y mantén ventanas cerradas en las horas de más tráfico."
+    },
+    "rojo": {
+      "titulo": "Aire dañino hoy",
+      "recomendacion": "Evita salir y la actividad física al aire libre. Mantén puertas y ventanas cerradas. Si debes salir, ve despacio y por poco tiempo."
+    },
+    "gris": {
+      "titulo": "Sin dato reciente",
+      "recomendacion": "Sin dato reciente, no podemos orientarte ahora. Vuelve a intentarlo más tarde."
+    }
+  },
+  "guia": [
+    { "nivel": "verde",   "rango": "ICA 0–100",   "que_significa": "El aire está bien para la mayoría de las personas.", "que_hacer": "Puedes hacer tu vida normal y ventilar la casa." },
+    { "nivel": "naranja", "rango": "ICA 101–150", "que_significa": "Puede afectar a personas sensibles, como mujeres gestantes.", "que_hacer": "Baja el ritmo al aire libre y limita la exposición prolongada." },
+    { "nivel": "rojo",    "rango": "ICA 151–500", "que_significa": "El aire puede dañar la salud.", "que_hacer": "Quédate en interiores, cierra ventanas y evita el esfuerzo físico afuera." },
+    { "nivel": "gris",    "rango": "—",            "que_significa": "No hay una medición reciente (menos de 6 horas).", "que_hacer": "No tomes decisiones con datos viejos; vuelve a consultar más tarde." }
+  ]
+}
