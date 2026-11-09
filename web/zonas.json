@@ -1,0 +1,74 @@
+{
+  "localidad": "Ciudad Bolívar",
+  "ciudad": "Bogotá, D.C.",
+  "descripcion": "Las 8 Unidades de Planeamiento Zonal (UPZ) de la localidad de Ciudad Bolívar. Son divisiones administrativas oficiales de Bogotá definidas por la Secretaría Distrital de Planeación.",
+  "fuente_nombres": "Secretaría Distrital de Planeación de Bogotá (nombres de UPZ). Son nombres administrativos públicos, no coordenadas ni límites cartográficos.",
+  "asociacion_estaciones": "pendiente",
+  "nota_pendiente": "Todavía no afirmamos qué estación de monitoreo corresponde a cada zona. Hacerlo requiere los límites geográficos oficiales de las UPZ y una referencia verificable de distancias, que aún no forman parte de este proyecto. No inventamos coordenadas, distancias ni cercanías.",
+  "zonas": [
+    {
+      "id": "ismael_perdomo",
+      "nombre": "Ismael Perdomo",
+      "codigo_sdp": "69",
+      "caracter": "urbana",
+      "resumen": "Una de las UPZ del norte de la localidad, con alta densidad de barrios residenciales.",
+      "estacion_asociada": null
+    },
+    {
+      "id": "jerusalen",
+      "nombre": "Jerusalén",
+      "codigo_sdp": "70",
+      "caracter": "urbana",
+      "resumen": "UPZ residencial de la zona media de la localidad.",
+      "estacion_asociada": null
+    },
+    {
+      "id": "san_francisco",
+      "nombre": "San Francisco",
+      "codigo_sdp": "66",
+      "caracter": "urbana",
+      "resumen": "UPZ residencial consolidada de Ciudad Bolívar.",
+      "estacion_asociada": null
+    },
+    {
+      "id": "lucero",
+      "nombre": "Lucero",
+      "codigo_sdp": "67",
+      "caracter": "urbana",
+      "resumen": "UPZ residencial de ladera, una de las más pobladas de la localidad.",
+      "estacion_asociada": null
+    },
+    {
+      "id": "el_tesoro",
+      "nombre": "El Tesoro",
+      "codigo_sdp": "68",
+      "caracter": "urbana",
+      "resumen": "UPZ de la parte alta de la localidad.",
+      "estacion_asociada": null
+    },
+    {
+      "id": "arborizadora",
+      "nombre": "Arborizadora",
+      "codigo_sdp": null,
+      "caracter": "urbana",
+      "resumen": "UPZ con áreas verdes y zonas residenciales en el sector norte de la localidad.",
+      "estacion_asociada": null
+    },
+    {
+      "id": "monte_blanco",
+      "nombre": "Monte Blanco",
+      "codigo_sdp": null,
+      "caracter": "mixta",
+      "resumen": "UPZ del borde sur de la localidad, en transición entre lo urbano y lo rural.",
+      "estacion_asociada": null
+    },
+    {
+      "id": "mochuelo",
+      "nombre": "Mochuelo",
+      "codigo_sdp": null,
+      "caracter": "rural",
+      "resumen": "Zona rural del sur de Ciudad Bolívar; en el proyecto existen estaciones con el nombre «Mochuelo».",
+      "estacion_asociada": null
+    }
+  ]
+}
